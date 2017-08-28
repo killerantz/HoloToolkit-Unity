@@ -9,17 +9,9 @@ using UnityEngine.Events;
 namespace HoloToolkit.Examples.Prototyping
 {
     /// <summary>
-    /// A position animation component that supports easing and local position
-    /// The animation can be triggered through code or the inspector
-    /// 
-    /// Supports easing, reverse and reseting positions.
-    /// Free easing allows the object to animate by just updating the TargetValue for a more organic feel
-    /// 
-    /// Typical use:
-    /// Set the TargetValue
-    /// Call StartRunning();
+    /// animates the rotation of an object with eases
     /// </summary>
-    public class MoveToPosition : TransitionTo<Vector3>
+    public class EulerRotateToValue : TransitionTo<Vector3>
     {
         [Tooltip("will the animation be applied to the local or global transform?")]
         public bool ToLocalTransform = false;
@@ -36,21 +28,21 @@ namespace HoloToolkit.Examples.Prototyping
         }
 
         /// <summary>
-        /// get the current position
+        /// get the current rotation
         /// </summary>
         /// <returns></returns>
         public override Vector3 GetValue()
         {
             if (ToLocalTransform)
             {
-                return TargetObject.transform.localPosition;
+                return TargetObject.transform.localRotation.eulerAngles;
             }
 
-            return TargetObject.transform.position;
+            return TargetObject.transform.rotation.eulerAngles;
         }
 
         /// <summary>
-        /// animation the position
+        /// animate the rotation
         /// </summary>
         /// <param name="startValue"></param>
         /// <param name="targetValue"></param>
@@ -62,18 +54,18 @@ namespace HoloToolkit.Examples.Prototyping
         }
 
         /// <summary>
-        /// set the current position
+        /// set the rotation
         /// </summary>
         /// <param name="value"></param>
         public override void SetValue(Vector3 value)
         {
             if (ToLocalTransform)
             {
-                TargetObject.transform.localPosition = value;
+                TargetObject.transform.localRotation = Quaternion.Euler(value);
             }
             else
             {
-                TargetObject.transform.position = value;
+                TargetObject.transform.rotation = Quaternion.Euler(value);
             }
         }
     }
