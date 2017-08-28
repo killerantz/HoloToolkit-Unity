@@ -71,7 +71,14 @@ namespace HoloToolkit.Examples.Prototyping
             
             if (EaseCurve.keys.Length < 1)
             {
+                //default, linear
                 EaseCurve = AnimationCurve.Linear(0, 1, 1, 1);
+
+                // could be old setting from previous version
+                if ((int)LerpType > 1)
+                {
+                    UpgradeOldEaseSettings();
+                }
             }
 
             mInited = true;
@@ -205,6 +212,38 @@ namespace HoloToolkit.Examples.Prototyping
                 {
                     OnComplete.Invoke();
                 }
+            }
+        }
+
+        private void UpgradeOldEaseSettings()
+        {
+            int type = (int)LerpType;
+
+            switch (type)
+            {
+                case 0:
+                    LerpType = LerpTypes.Timed;
+                    break;
+                case 1:
+                    LerpType = LerpTypes.Timed;
+                    // ease in
+                    EaseCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 1, 2, 0));
+                    break;
+                case 2:
+                    LerpType = LerpTypes.Timed;
+
+                    // ease out
+                    EaseCurve = new AnimationCurve(new Keyframe(0, 0, 0, 2), new Keyframe(1, 1));
+                    break;
+                case 3:
+                    LerpType = LerpTypes.Timed;
+
+                    // ease inout
+                    EaseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+                    break;
+                case 4:
+                    LerpType = LerpTypes.Free;
+                    break;
             }
         }
     }

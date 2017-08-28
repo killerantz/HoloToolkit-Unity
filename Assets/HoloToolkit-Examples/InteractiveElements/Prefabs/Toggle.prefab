@@ -222,7 +222,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011643663796}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalPosition: {x: 0.301, y: 0.098, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4937479597906492}
@@ -358,6 +358,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!23 &23000013780216876
 MeshRenderer:
@@ -389,6 +390,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!23 &23000014279979606
 MeshRenderer:
@@ -421,6 +423,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!23 &23000014282784788
 MeshRenderer:
@@ -452,6 +455,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &33000012639485538
 MeshFilter:
@@ -634,14 +638,32 @@ MonoBehaviour:
   TargetObject: {fileID: 0}
   TargetValue: {x: 0, y: 0, z: 0}
   LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   LerpTime: 0.25
   IsRunning: 0
-  ToLocalTransform: 1
   OnComplete:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
+  ToLocalTransform: 1
 --- !u!114 &114450952302494114
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -825,15 +847,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TargetObject: {fileID: 0}
   TargetValue: {x: 0, y: 0, z: 0}
-  LerpType: 2
+  LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   LerpTime: 0.35
   IsRunning: 0
-  ToLocalTransform: 1
   OnComplete:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
+  ToLocalTransform: 1
 --- !u!114 &114844220242307014
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -847,15 +887,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TargetObject: {fileID: 0}
   TargetValue: {x: 0, y: 0, z: 0}
-  LerpType: 2
+  LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   LerpTime: 0.35
   IsRunning: 0
-  ToLocalTransform: 1
   OnComplete:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
+  ToLocalTransform: 1
 --- !u!114 &114886118128092200
 MonoBehaviour:
   m_ObjectHideFlags: 1
