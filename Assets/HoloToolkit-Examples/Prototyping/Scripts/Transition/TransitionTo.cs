@@ -29,7 +29,7 @@ namespace HoloToolkit.Examples.Prototyping
 
         [Tooltip("The rotation value to animate to")]
         public T TargetValue;
-        
+
         [Tooltip("The type of ease to apply to the tween")]
         public LerpTypes LerpType;
 
@@ -62,13 +62,15 @@ namespace HoloToolkit.Examples.Prototyping
 
         protected bool mInited = false;
 
+        protected float mFreeSpeedRatio = 10;
+
         protected virtual void Awake()
         {
             if (TargetObject == null)
             {
                 TargetObject = this.gameObject;
             }
-            
+
             if (EaseCurve.keys.Length < 1)
             {
                 //default, linear
@@ -120,7 +122,7 @@ namespace HoloToolkit.Examples.Prototyping
         /// </summary>
         public void Reverse()
         {
-            
+
             if (TargetObject == null)
             {
                 TargetObject = this.gameObject;
@@ -162,7 +164,7 @@ namespace HoloToolkit.Examples.Prototyping
         /// <returns></returns>
         private T GetNewValue(T currentValue, float percent)
         {
-           T newValue = GetValue();
+            T newValue = GetValue();
             switch (LerpType)
             {
                 case LerpTypes.Timed:
@@ -177,7 +179,7 @@ namespace HoloToolkit.Examples.Prototyping
 
             return newValue;
         }
-        
+
         /// <summary>
         /// Animate
         /// </summary>
@@ -203,8 +205,8 @@ namespace HoloToolkit.Examples.Prototyping
             else if (LerpType == LerpTypes.Free) // is always running, just waiting for the TargetValue to change
             {
                 bool wasRunning = IsRunning;
-                
-                SetValue(GetNewValue(GetValue(), LerpTime * Time.deltaTime));
+
+                SetValue(GetNewValue(GetValue(), Mathf.Clamp(Mathf.Pow(0.5f, LerpTime) * mFreeSpeedRatio, 0.5f, mFreeSpeedRatio) * Time.deltaTime));
                 IsRunning = CompareValues(GetValue(), TargetValue);
 
                 // fire the event if complete
