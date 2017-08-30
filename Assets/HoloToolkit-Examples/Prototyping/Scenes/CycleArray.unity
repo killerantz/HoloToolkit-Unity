@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 7
+  serializedVersion: 8
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -25,6 +25,7 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 0
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
@@ -41,7 +42,7 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 7
+  serializedVersion: 11
   m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
@@ -53,7 +54,7 @@ LightmapSettings:
     m_EnableBakedLightmaps: 1
     m_EnableRealtimeLightmaps: 1
   m_LightmapEditorSettings:
-    serializedVersion: 4
+    serializedVersion: 9
     m_Resolution: 2
     m_BakeResolution: 40
     m_TextureWidth: 1024
@@ -66,13 +67,27 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_DirectLightInLightProbes: 1
     m_FinalGather: 0
     m_FinalGatherFiltering: 1
     m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
+    m_MixedBakeMode: 1
+    m_BakeBackend: 0
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 500
+    m_PVRBounces: 2
+    m_PVRFiltering: 0
+    m_PVRFilteringMode: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 5
+    m_PVRFilteringGaussRadiusAO: 2
+    m_PVRFilteringAtrousColorSigma: 1
+    m_PVRFilteringAtrousNormalSigma: 1
+    m_PVRFilteringAtrousPositionSigma: 1
   m_LightingDataAsset: {fileID: 0}
-  m_RuntimeCPUUsage: 25
+  m_UseShadowmask: 0
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -89,6 +104,8 @@ NavMeshSettings:
     minRegionArea: 2
     manualCellSize: 0
     cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
     accuratePlacement: 0
   m_NavMeshData: {fileID: 0}
 --- !u!1 &194322049
@@ -172,6 +189,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!1001 &302440685
 Prefab:
@@ -439,6 +457,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!1 &1017017887
 GameObject:
@@ -453,7 +472,7 @@ GameObject:
   - component: {fileID: 1017017889}
   - component: {fileID: 1017017893}
   - component: {fileID: 1017017888}
-  - component: {fileID: 1017017895}
+  - component: {fileID: 1017017894}
   m_Layer: 0
   m_Name: RotationCube
   m_TagString: Untagged
@@ -510,6 +529,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!65 &1017017890
 BoxCollider:
@@ -557,7 +577,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CycleObject: {fileID: 1017017887}
---- !u!114 &1017017895
+--- !u!114 &1017017894
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -565,20 +585,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 1017017887}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b632be45321348d44af6b9f821fa1b35, type: 3}
+  m_Script: {fileID: 11500000, guid: 110418d74e84376419dec761831da81e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetObject: {fileID: 0}
+  TargetObject: {fileID: 1017017887}
   TargetValue: {x: 0, y: 0, z: 0, w: 0}
-  LerpType: 2
+  LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   LerpTime: 0.75
   IsRunning: 0
-  ToLocalTransform: 0
   OnComplete:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
+  ToLocalTransform: 0
 --- !u!1001 &1150464749
 Prefab:
   m_ObjectHideFlags: 0
@@ -702,6 +740,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!1 &1254213428
 GameObject:
@@ -797,6 +836,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!1 &1267125469
 GameObject:
@@ -811,7 +851,7 @@ GameObject:
   - component: {fileID: 1267125471}
   - component: {fileID: 1267125476}
   - component: {fileID: 1267125470}
-  - component: {fileID: 1267125477}
+  - component: {fileID: 1267125475}
   m_Layer: 0
   m_Name: ScaleCube
   m_TagString: Untagged
@@ -865,6 +905,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!65 &1267125472
 BoxCollider:
@@ -900,6 +941,45 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1267125475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1267125469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f476e29780eadb4449a7f7e48095be3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TargetObject: {fileID: 1267125469}
+  TargetValue: {x: 0, y: 0, z: 0}
+  LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  LerpTime: 0.75
+  IsRunning: 0
+  OnComplete:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!114 &1267125476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -912,27 +992,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CycleObject: {fileID: 1267125469}
---- !u!114 &1267125477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1267125469}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 520ececd0ff1e964894362e9a885b962, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TargetObject: {fileID: 0}
-  TargetValue: {x: 0, y: 0, z: 0}
-  LerpType: 2
-  LerpTime: 0.75
-  IsRunning: 0
-  OnComplete:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
 --- !u!1 &1536282101
 GameObject:
   m_ObjectHideFlags: 0
@@ -1015,6 +1074,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!114 &1536282105
 MonoBehaviour:
@@ -1041,7 +1101,7 @@ GameObject:
   - component: {fileID: 1669441492}
   - component: {fileID: 1669441489}
   - component: {fileID: 1669441490}
-  - component: {fileID: 1669441496}
+  - component: {fileID: 1669441491}
   m_Layer: 0
   m_Name: PositionCube
   m_TagString: Untagged
@@ -1079,6 +1139,46 @@ MonoBehaviour:
   TargetObject: {fileID: 0}
   DefaultIndex: 0
   UseLocalPosition: 0
+--- !u!114 &1669441491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1669441488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 693749e0a235dbb4487e555031e4491c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TargetObject: {fileID: 1669441488}
+  TargetValue: {x: 0, y: 0, z: 0}
+  LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  LerpTime: 0.5
+  IsRunning: 0
+  OnComplete:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  ToLocalTransform: 0
 --- !u!23 &1669441492
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1109,6 +1209,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!65 &1669441493
 BoxCollider:
@@ -1144,28 +1245,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1669441496
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1669441488}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2b03bcc7db83ce4d8233fcc4ae4ec2a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TargetObject: {fileID: 0}
-  TargetValue: {x: 0, y: 0, z: 0}
-  LerpType: 2
-  LerpTime: 0.5
-  IsRunning: 0
-  ToLocalTransform: 0
-  OnComplete:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
 --- !u!1 &1693059918
 GameObject:
   m_ObjectHideFlags: 0
@@ -1189,7 +1268,7 @@ Light:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1693059918}
   m_Enabled: 1
-  serializedVersion: 7
+  serializedVersion: 8
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
@@ -1214,6 +1293,8 @@ Light:
   m_Lightmapping: 4
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &1693059920
@@ -1310,6 +1391,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!1 &1879190487
 GameObject:
@@ -1362,6 +1444,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!65 &1879190489
 BoxCollider:
@@ -1417,12 +1500,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 1879190487}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c76a36955929b694bb2433ceb5357980, type: 3}
+  m_Script: {fileID: 11500000, guid: eb809cfd3efcb4246b32285c3ada16e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetObject: {fileID: 0}
-  TransitionTime: 0.75
-  SmoothTransition: 1
+  TargetObject: {fileID: 1879190487}
+  TargetValue: {r: 0.06666667, g: 0.6117647, b: 0.8745098, a: 1}
+  LerpType: 0
+  EaseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  LerpTime: 1
+  IsRunning: 0
+  OnComplete:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  ShaderColorType: 0
 --- !u!114 &1879190494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1444,6 +1553,7 @@ MonoBehaviour:
   - {r: 0.05490196, g: 0.65882355, b: 0.6, a: 1}
   TargetObject: {fileID: 0}
   DefaultIndex: 0
+  ShaderColorType: 0
 --- !u!1 &1950170494
 GameObject:
   m_ObjectHideFlags: 0
@@ -1525,6 +1635,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!1 &2048097454
 GameObject:
@@ -1620,4 +1731,5 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0

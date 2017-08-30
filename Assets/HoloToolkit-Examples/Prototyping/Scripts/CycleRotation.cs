@@ -16,11 +16,11 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("use the local rotation - overrides the UseLocalTransform value of RotateToValue")]
         public bool UseLocalRotation = false;
 
-        private RotateToValue mRotation;
+        private TransitionToRotation mRotation;
 
         protected override void Awake()
         {
-            mRotation = GetComponent<RotateToValue>();
+            mRotation = GetComponent<TransitionToRotation>();
 
             base.Awake();
         }

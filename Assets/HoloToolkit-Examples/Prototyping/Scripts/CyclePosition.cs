@@ -16,11 +16,11 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("use local position instead of position. Overrides MoveToPosition ToLocalPosition setting.")]
         public bool UseLocalPosition = false;
 
-        private MoveToPosition mMoveTranslator;
+        private TransitionToPosition mMoveTranslator;
 
         protected override void Awake()
         {
-            mMoveTranslator = GetComponent<MoveToPosition>();
+            mMoveTranslator = GetComponent<TransitionToPosition>();
             base.Awake();
         }
 

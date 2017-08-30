@@ -16,11 +16,11 @@ namespace HoloToolkit.Examples.Prototyping
         private Vector3 StartScale;
         private bool isFirstCall = true;
 
-        private ScaleToValue mScaler;
+        private TransitionToScale mScaler;
 
         protected override void Awake()
         {
-            mScaler = GetComponent<ScaleToValue>();
+            mScaler = GetComponent<TransitionToScale>();
 
             base.Awake();
         }

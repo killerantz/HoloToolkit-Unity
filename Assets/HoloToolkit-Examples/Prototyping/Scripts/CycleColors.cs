@@ -13,19 +13,29 @@ namespace HoloToolkit.Examples.Prototyping
     /// </summary>
     public class CycleColors : CycleArray<Color>
     {
+        [Tooltip("Select the shader color property to animate: _Color is default")]
+        public ColorObject.ShaderColorTypes ShaderColorType = Prototyping.ColorObject.ShaderColorTypes.Color;
+
         // color to blend to
         private Color mTargetColor;
-
-        // the material to change colors
-        private Material mMaterial;
-
+        
         // color transition component - used for animation
-        private ColorTransition mColorTransition;
+        private TransitionToColor mColorTransition;
+
+        private ColorAbstraction mColorAbstraction;
+
+        private bool mStarted = false;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            mColorTransition = TargetObject.GetComponent<TransitionToColor>();
+        }
 
         protected override void Start()
         {
-            mColorTransition = TargetObject.GetComponent<ColorTransition>();
             base.Start();
+            mStarted = true;
         }
 
         /// <summary>
@@ -37,33 +47,26 @@ namespace HoloToolkit.Examples.Prototyping
             base.SetIndex(index);
 
             mTargetColor = Array[Index];
-
-            if (mColorTransition == null)
+            
+            if (mColorTransition == null || !mStarted)
             {
-                Renderer renderer = TargetObject.GetComponent<Renderer>();
-
-                if (renderer != null)
-                {
-                    mMaterial = renderer.material;
-                }
-
-                mMaterial.color = mTargetColor;
+                GetColorAbstraction().SetColor(mTargetColor);
             }
             else
             {
-                mColorTransition.StartTransition(mTargetColor);
+                mColorTransition.TargetValue = mTargetColor;
+                mColorTransition.StartRunning();
             }
         }
 
-        /// <summary>
-        /// clean up material if one was created dynamically
-        /// </summary>
-        private void OnDestroy()
+        protected ColorAbstraction GetColorAbstraction()
         {
-            if(mMaterial != null)
+            if (mColorAbstraction == null)
             {
-                GameObject.Destroy(mMaterial);
+                mColorAbstraction = new ColorAbstraction(this.gameObject, ShaderColorType);
             }
+
+            return mColorAbstraction;
         }
     }
 }

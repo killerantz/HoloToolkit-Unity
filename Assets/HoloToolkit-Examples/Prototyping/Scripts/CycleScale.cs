@@ -13,11 +13,11 @@ namespace HoloToolkit.Examples.Prototyping
     /// </summary>
     public class CycleScale : CycleArray<Vector3>
     {
-        private ScaleToValue mScaler;
+        private TransitionToScale mScaler;
 
         protected override void Awake()
         {
-            mScaler = GetComponent<ScaleToValue>();
+            mScaler = GetComponent<TransitionToScale>();
 
             base.Awake();
         }
