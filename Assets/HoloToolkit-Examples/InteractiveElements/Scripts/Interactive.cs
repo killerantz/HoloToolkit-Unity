@@ -78,7 +78,7 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// We can update visual feedback based on state change, all the logic is already done, making InteractiveEffects behaviors less complex then comparing selected + Disabled.
         /// </summary>
         public enum ButtonStateEnum { Default, Focus, Press, Selected, FocusSelected, PressSelected, Disabled, DisabledSelected }
-        protected ButtonStateEnum mState = ButtonStateEnum.Default;
+        public ButtonStateEnum State { set; get; }
 
         /// <summary>
         /// Timers
@@ -107,6 +107,7 @@ namespace HoloToolkit.Examples.InteractiveElements
 
         protected virtual void Awake()
         {
+            print("Awake: " + State);
             if (ParentObject == null)
             {
                 ParentObject = this.gameObject;
@@ -343,7 +344,7 @@ namespace HoloToolkit.Examples.InteractiveElements
             for (int i = 0; i < interactiveCount; ++i)
             {
                 InteractiveWidget widget = mInteractiveWidgets[i];
-                widget.SetState(mState);
+                widget.SetState(State);
 
                 int currentCount = mInteractiveWidgets.Count;
                 if (currentCount < interactiveCount)
@@ -363,7 +364,7 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
 
             mInteractiveWidgets.Add(widget);
-            widget.SetState(mState);
+            widget.SetState(State);
         }
 
         public void UnregisterWidget(InteractiveWidget widget)
@@ -403,22 +404,22 @@ namespace HoloToolkit.Examples.InteractiveElements
                     {
                         if (HasDown)
                         {
-                            mState = ButtonStateEnum.PressSelected;
+                            State = ButtonStateEnum.PressSelected;
                         }
                         else
                         {
-                            mState = ButtonStateEnum.FocusSelected;
+                            State = ButtonStateEnum.FocusSelected;
                         }
                     }
                     else
                     {
                         if (HasDown)
                         {
-                            mState = ButtonStateEnum.PressSelected;
+                            State = ButtonStateEnum.PressSelected;
                         }
                         else
                         {
-                            mState = ButtonStateEnum.Selected;
+                            State = ButtonStateEnum.Selected;
                         }
                     }
                 }
@@ -428,22 +429,22 @@ namespace HoloToolkit.Examples.InteractiveElements
                     {
                         if (HasDown)
                         {
-                            mState = ButtonStateEnum.Press;
+                            State = ButtonStateEnum.Press;
                         }
                         else
                         {
-                            mState = ButtonStateEnum.Focus;
+                            State = ButtonStateEnum.Focus;
                         }
                     }
                     else
                     {
                         if (HasDown)
                         {
-                            mState = ButtonStateEnum.Press;
+                            State = ButtonStateEnum.Press;
                         }
                         else
                         {
-                            mState = ButtonStateEnum.Default;
+                            State = ButtonStateEnum.Default;
                         }
                     }
                 }
@@ -453,11 +454,11 @@ namespace HoloToolkit.Examples.InteractiveElements
             {
                 if (IsSelected)
                 {
-                    mState = ButtonStateEnum.DisabledSelected;
+                    State = ButtonStateEnum.DisabledSelected;
                 }
                 else
                 {
-                    mState = ButtonStateEnum.Disabled;
+                    State = ButtonStateEnum.Disabled;
                 }
             }
             mCheckSelected = IsSelected;

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;						
 using UnityEngine;
 
 namespace HoloToolkit.Examples.InteractiveElements
@@ -12,8 +14,13 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public abstract class InteractiveThemeWidget : InteractiveWidget
     {
+        [Tooltip("A tag for finding the theme in the scene")]
+        public string ThemeTag = "defaultTheme";
+
         // checks if the theme has changed since the last SetState was called.
         protected bool mThemeUpdated;
+
+        protected string mCheckThemeTag = "";
 
         /// <summary>
         /// Sets the themes based on the Theme Tags
@@ -39,6 +46,20 @@ namespace HoloToolkit.Examples.InteractiveElements
         {
             base.SetState(state);
             mThemeUpdated = false;
+        }
+
+        /// <summary>
+        /// get a new theme if themeTag has changed.
+        /// </summary>
+        protected override void Update()
+        {
+            if (!mCheckThemeTag.Equals(ThemeTag))
+            {
+                SetTheme();
+                RefreshIfNeeded();
+            }
+
+            mCheckThemeTag = ThemeTag;
         }
 
         /// <summary>
@@ -151,5 +172,168 @@ namespace HoloToolkit.Examples.InteractiveElements
 
             return null;
         }
+		/// <summary>
+        /// Find a QuaternionInteractiveTheme by tag
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public QuaternionInteractiveTheme GetQuaternionTheme(string tag)
+        {
+            // search locally
+            QuaternionInteractiveTheme[] quaternionTheme;
+            QuaternionInteractiveTheme theme = null;
+
+            if (InteractiveHost != null)
+            {
+                // search locally
+                quaternionTheme = InteractiveHost.GetComponentsInChildren<QuaternionInteractiveTheme>();
+                theme = FindQuaternionTheme(quaternionTheme, tag);
+            }
+            else
+            {
+                quaternionTheme = GetComponentsInParent<QuaternionInteractiveTheme>();
+                theme = FindQuaternionTheme(quaternionTheme, tag);
+            }
+
+            // search globally
+            if (theme == null)
+            {
+                quaternionTheme = FindObjectsOfType<QuaternionInteractiveTheme>();
+                theme = FindQuaternionTheme(quaternionTheme, tag);
+            }
+
+            return theme;
+        }
+
+        // compare theme tags
+        public QuaternionInteractiveTheme FindQuaternionTheme(QuaternionInteractiveTheme[] quaternionThemes, string tag)
+        {
+            for (int i = 0; i < quaternionThemes.Length; ++i)
+            {
+                if (quaternionThemes[i].Tag == tag)
+                {
+                    return quaternionThemes[i];
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Find a StringInteractiveTheme by tag
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public StringInteractiveTheme GetStringTheme(string tag)
+        {
+            // search locally
+            StringInteractiveTheme[] stringThemes;
+            StringInteractiveTheme theme = null;
+
+            if (InteractiveHost != null)
+            {
+                // search locally
+                stringThemes = InteractiveHost.GetComponentsInChildren<StringInteractiveTheme>();
+                theme = FindStringTheme(stringThemes, tag);
+            }
+            else
+            {
+                stringThemes = GetComponentsInParent<StringInteractiveTheme>();
+                theme = FindStringTheme(stringThemes, tag);
+            }
+
+
+            // search globally
+            if (theme == null)
+            {
+                stringThemes = FindObjectsOfType<StringInteractiveTheme>();
+                theme = FindStringTheme(stringThemes, tag);
+            }
+
+            return theme;
+        }
+
+        // compare theme tags
+        public StringInteractiveTheme FindStringTheme(StringInteractiveTheme[] stringThemes, string tag)
+        {
+            for (int i = 0; i < stringThemes.Length; ++i)
+            {
+                if (stringThemes[i].Tag == tag)
+                {
+                    return stringThemes[i];
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Find a AudioInteractiveTheme by tag
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public AudioInteractiveTheme GetAudioTheme(string tag)
+        {
+            // search locally
+            AudioInteractiveTheme[] audioThemes;
+            AudioInteractiveTheme theme = null;
+
+            if (InteractiveHost != null)
+            {
+                // search locally
+                audioThemes = InteractiveHost.GetComponentsInChildren<AudioInteractiveTheme>();
+                theme = FindAudioTheme(audioThemes, tag);
+            }
+            else
+            {
+                audioThemes = GetComponentsInParent<AudioInteractiveTheme>();
+                theme = FindAudioTheme(audioThemes, tag);
+            }
+
+
+            // search globally
+            if (theme == null)
+            {
+                audioThemes = FindObjectsOfType<AudioInteractiveTheme>();
+                theme = FindAudioTheme(audioThemes, tag);
+            }
+
+            return theme;
+        }
+
+        // compare theme tags
+        public AudioInteractiveTheme FindAudioTheme(AudioInteractiveTheme[] audioThemes, string tag)
+        {
+            for (int i = 0; i < audioThemes.Length; ++i)
+            {
+                if (audioThemes[i].Tag == tag)
+                {
+                    return audioThemes[i];
+                }
+            }
+
+            return null;
+        }
+
+        public virtual List<string> GetTags()
+        {
+            List<string> tags = new List<string>();
+            Type type = this.GetType();
+            FieldInfo[] info = (FieldInfo[])type.GetFields();
+
+            for (int i = 0; i < info.Length; i++)
+            {
+                if (info[i].FieldType == typeof(string))
+                {
+                    string tag = (string)info[i].GetValue(this);
+                    if (tag != "")
+                    {
+                        tags.Add(tag);
+                    }
+                }
+            }
+
+            return tags;
+        }			 
     }
 }

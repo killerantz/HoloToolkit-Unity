@@ -13,13 +13,16 @@ namespace HoloToolkit.Examples.Prototyping
     /// </summary>
     public class CycleScale : CycleArray<Vector3>
     {
-        private TransitionToScale mScaler;
+        private TransitionToScale mTransition;
+
+        private ScaleToValue mScaler; // support for obsolete transition
 
         protected override void Awake()
         {
-            mScaler = GetComponent<TransitionToScale>();
-
             base.Awake();
+
+            mTransition = TargetObject.GetComponent<TransitionToScale>();
+            mScaler = TargetObject.GetComponent<ScaleToValue>();
         }
 
         /// <summary>
@@ -32,7 +35,12 @@ namespace HoloToolkit.Examples.Prototyping
 
             Vector3 item = Current;
 
-            if (mScaler != null)
+            if (mTransition != null)
+            {
+                mTransition.TargetValue = item;
+                mTransition.Run();
+            }
+            else if (mScaler != null)
             {
                 mScaler.TargetValue = item;
                 mScaler.StartRunning();

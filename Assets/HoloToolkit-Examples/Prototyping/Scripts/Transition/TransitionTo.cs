@@ -27,12 +27,13 @@ namespace HoloToolkit.Examples.Prototyping
     [ExecuteInEditMode]
     public abstract class TransitionTo<T> : MonoBehaviour, ITransitionTo
     {
+
         [Tooltip("The object to animate")]
         public GameObject TargetObject;
 
         [Tooltip("The rotation value to animate to")]
         public T TargetValue;
-        
+
         [Tooltip("The type of ease to apply to the tween")]
         public LerpTypes LerpType;
 
@@ -59,6 +60,8 @@ namespace HoloToolkit.Examples.Prototyping
             return IsRunning;
         }
 
+        public bool IsReversed { get { return CompareValues(TargetValue, GetCachedStart()); } }
+
         // animation ticker
         protected float mLerpTimeCounter = 0;
 
@@ -73,13 +76,15 @@ namespace HoloToolkit.Examples.Prototyping
         protected float FreeTimeRatio = 10;
         protected float FreeTimeRatioSeed = 0.5f;
 
+        protected T[] mCachedValues = new T[2];
+
         protected virtual void Awake()
         {
             if (TargetObject == null)
             {
                 TargetObject = this.gameObject;
             }
-            
+
             // set a linear curve by default
             if (EaseCurve == null)
             {
@@ -97,13 +102,15 @@ namespace HoloToolkit.Examples.Prototyping
             }
 
             mStartValue = GetValue();
+            CacheValues(mStartValue, TargetValue);
+
             mInited = true;
         }
 
         /// <summary>
         /// Start the animation
         /// </summary>
-        public virtual void StartRunning()
+        public virtual void Run()
         {
             if (TargetObject == null)
             {
@@ -116,7 +123,7 @@ namespace HoloToolkit.Examples.Prototyping
         }
 
         /// <summary>
-        /// Set the rotation to the cached starting value
+        /// Set the trandform to the cached starting value
         /// </summary>
         public virtual void ResetTransform()
         {
@@ -132,12 +139,18 @@ namespace HoloToolkit.Examples.Prototyping
             mLerpTimeCounter = 0;
         }
 
-        /// <summary>
-        /// reverse the rotation - go back
-        /// </summary>
-        public void Reverse()
+        public virtual void ResetTransitionValues()
         {
-            
+            mStartValue = GetCachedStart();
+            TargetValue = GetCachedTarget();
+        }
+
+        /// <summary>
+        /// reverse the transition - go back
+        /// </summary>
+        public virtual void Reverse()
+        {
+
             if (TargetObject == null)
             {
                 TargetObject = this.gameObject;
@@ -154,9 +167,27 @@ namespace HoloToolkit.Examples.Prototyping
         /// <summary>
         /// Stop the animation
         /// </summary>
-        public void StopRunning()
+        public virtual void Stop()
         {
             IsRunning = false;
+        }
+
+        /// <summary>
+        /// set the starting value, for control more over reversing
+        /// </summary>
+        /// <param name="value"></param>
+        public virtual void SetStartValue(T value)
+        {
+            mStartValue = value;
+            CacheValues(mStartValue, TargetValue);
+        }
+
+        /// <summary>
+        /// cache the current values, save this state.
+        /// </summary>
+        public void CacheCurrentValues()
+        {
+            CacheValues(mStartValue, TargetValue);
         }
 
         // get the current value
@@ -172,12 +203,12 @@ namespace HoloToolkit.Examples.Prototyping
         public abstract T LerpValues(T startValue, T targetValue, float percent);
         
         /// <summary>
-        /// Calculate the new rotation based on time and ease settings
+        /// Calculate the new transform based on time and ease settings
         /// </summary>
         /// <param name="currentValue"></param>
         /// <param name="percent"></param>
         /// <returns></returns>
-        private T GetNewValue(T currentValue, float percent)
+        protected T GetNewValue(T currentValue, float percent)
         {
             T newValue = GetValue();
             switch (LerpType)
@@ -219,7 +250,7 @@ namespace HoloToolkit.Examples.Prototyping
         /// <summary>
         /// Animate
         /// </summary>
-        private void Update()
+        protected void Update()
         {
 #if UNITY_EDITOR
             if(!Application.isPlaying)
@@ -264,6 +295,26 @@ namespace HoloToolkit.Examples.Prototyping
             }
         }
 
+        protected void CacheValues(T start, T target)
+        {
+            mCachedValues[0] = start;
+            mCachedValues[1] = target;
+        }
+
+        protected T GetCachedStart()
+        {
+            return mCachedValues[0];
+        }
+
+        protected T GetCachedTarget()
+        {
+            return mCachedValues[1];
+        }
+
+        /// <summary>
+        /// updating from deprecated scripts
+        /// </summary>
+        /// <param name="type"></param>
         protected void UpdateLerpType(int type)
         {
             switch (type)
@@ -285,7 +336,7 @@ namespace HoloToolkit.Examples.Prototyping
                     SetEaseCurve(BasicEaseCurves.EaseInOut);
                     break;
                 case 4:
-                    LerpType = LerpTypes.Timed;
+                    LerpType = LerpTypes.Free;
                     SetEaseCurve(BasicEaseCurves.Linear);
                     break;
             }

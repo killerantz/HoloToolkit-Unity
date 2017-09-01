@@ -16,13 +16,14 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("use the local rotation - overrides the UseLocalTransform value of RotateToValue")]
         public bool UseLocalRotation = false;
 
-        private TransitionToRotation mRotation;
+        private TransitionToRotation mTransform;
+        private RotateToValue mRotation; //support for obsolete transtion
 
         protected override void Awake()
         {
-            mRotation = GetComponent<TransitionToRotation>();
-
             base.Awake();
+            mTransform = TargetObject.GetComponent<TransitionToRotation>();
+            mRotation = TargetObject.GetComponent<RotateToValue>();
         }
 
         /// <summary>
@@ -40,7 +41,13 @@ namespace HoloToolkit.Examples.Prototyping
             rotation.eulerAngles = item;
 
             // set the rotation
-            if (mRotation != null)
+            if (mTransform != null)
+            {
+                mTransform.ToLocalTransform = UseLocalRotation;
+                mTransform.TargetValue = rotation;
+                mTransform.Run();
+            }
+            else if(mRotation != null)
             {
                 mRotation.ToLocalTransform = UseLocalRotation;
                 mRotation.TargetValue = rotation;

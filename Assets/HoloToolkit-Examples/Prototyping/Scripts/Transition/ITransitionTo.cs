@@ -22,11 +22,11 @@ public interface ITransitionTo {
     bool GetIsRunning();
 
 
-    void StartRunning();
+    void Run();
     
     void ResetTransform();
 
     void Reverse();
 
-    void StopRunning();
+    void Stop();
 }

@@ -16,12 +16,16 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("use local position instead of position. Overrides MoveToPosition ToLocalPosition setting.")]
         public bool UseLocalPosition = false;
 
-        private TransitionToPosition mMoveTranslator;
+        private TransitionToPosition mTransition;
+
+        // to support obsolete Transitions
+        private MoveToPosition mMoveTranslator;
 
         protected override void Awake()
         {
-            mMoveTranslator = GetComponent<TransitionToPosition>();
             base.Awake();
+            mTransition = TargetObject.GetComponent<TransitionToPosition>();
+            mMoveTranslator = TargetObject.GetComponent<MoveToPosition>();
         }
 
         /// <summary>
@@ -35,7 +39,13 @@ namespace HoloToolkit.Examples.Prototyping
             Vector3 item = Array[Index];
 
             // use MoveTo Position
-            if (mMoveTranslator != null)
+            if (mTransition != null)
+            {
+                mTransition.ToLocalTransform = UseLocalPosition;
+                mTransition.TargetValue = item;
+                mTransition.Run();
+            }
+            else if(mMoveTranslator != null) // support for obsolete transition
             {
                 mMoveTranslator.ToLocalTransform = UseLocalPosition;
                 mMoveTranslator.TargetValue = item;
@@ -53,8 +63,6 @@ namespace HoloToolkit.Examples.Prototyping
                 }
                 
             }
-
-            
         }
 
     }

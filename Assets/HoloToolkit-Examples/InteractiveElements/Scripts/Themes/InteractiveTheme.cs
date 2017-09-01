@@ -10,7 +10,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// Generic base theme for buttons
     /// Button feedback can come in any form, scale, position, color, texture, etc...
     /// </summary>
-    public class InteractiveTheme<Type> : MonoBehaviour
+    public class InteractiveTheme<Type> : AbstractInteractiveTheme
     {
         [Tooltip("Tag to help distinguish themes")]
         public string Tag = "default";

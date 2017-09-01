@@ -20,7 +20,10 @@ namespace HoloToolkit.Examples.Prototyping
         private Color mTargetColor;
         
         // color transition component - used for animation
-        private TransitionToColor mColorTransition;
+        private TransitionToColor mTransition;
+
+        // support for obsolete transition
+        private ColorTransition mColorTransition;
 
         private ColorAbstraction mColorAbstraction;
 
@@ -29,7 +32,8 @@ namespace HoloToolkit.Examples.Prototyping
         protected override void Awake()
         {
             base.Awake();
-            mColorTransition = TargetObject.GetComponent<TransitionToColor>();
+            mTransition = TargetObject.GetComponent<TransitionToColor>();
+            mColorTransition = TargetObject.GetComponent<ColorTransition>();
         }
 
         protected override void Start()
@@ -47,15 +51,19 @@ namespace HoloToolkit.Examples.Prototyping
             base.SetIndex(index);
 
             mTargetColor = Array[Index];
-            
-            if (mColorTransition == null || !mStarted)
+
+            if (mTransition != null && mStarted)
             {
-                GetColorAbstraction().SetColor(mTargetColor);
+                mTransition.TargetValue = mTargetColor;
+                mTransition.Run();
+            }
+            else if(mColorTransition != null & mStarted)
+            {
+                mColorTransition.StartTransition(mTargetColor);
             }
             else
             {
-                mColorTransition.TargetValue = mTargetColor;
-                mColorTransition.StartRunning();
+                GetColorAbstraction().SetColor(mTargetColor);
             }
         }
 

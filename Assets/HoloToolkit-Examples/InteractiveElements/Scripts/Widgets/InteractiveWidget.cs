@@ -17,29 +17,8 @@ namespace HoloToolkit.Examples.InteractiveElements
 
         // the Interactive state
         protected Interactive.ButtonStateEnum State;
-
-        /// <summary>
-        /// register if the InteractiveHost was not manually set
-        /// </summary>
-        protected virtual void OnEnable()
-        {
-            if (InteractiveHost != null)
-            {
-                InteractiveHost.RegisterWidget(this);
-            }
-        }
-
-        /// <summary>
-        /// un register when disabled
-        /// </summary>
-        protected virtual void OnDisable()
-        {
-            if (InteractiveHost != null)
-            {
-                InteractiveHost.UnregisterWidget(this);
-            }
-        }
-
+        protected bool IsInited = false;
+        
         /// <summary>
         /// Interactive calls this method on state change
         /// </summary>
@@ -56,7 +35,6 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// </param>
         public virtual void SetState(Interactive.ButtonStateEnum state)
         {
-            
             switch (state)
             {
                 case Interactive.ButtonStateEnum.Default:
@@ -80,6 +58,38 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
 
             State = state;
+			IsInited = true;				
+        }
+
+        /// <summary>
+        /// get the state of the available InteractiveHost
+        /// </summary>
+        /// <returns></returns>
+        protected Interactive.ButtonStateEnum GetInteractiveHostState()
+        {
+            if(InteractiveHost == null)
+            {
+                InteractiveHost = GetComponentInParent<Interactive>();
+            }
+
+            if (InteractiveHost != null)
+            {
+                return InteractiveHost.State;
+            }
+
+            return Interactive.ButtonStateEnum.Default;
+        }
+
+        /// <summary>
+        /// check for state updates
+        /// </summary>
+        protected virtual void Update()
+        {
+            Interactive.ButtonStateEnum state = GetInteractiveHostState();
+            if (State != state)
+            {
+                SetState(state);
+            }
         }
     }
 }

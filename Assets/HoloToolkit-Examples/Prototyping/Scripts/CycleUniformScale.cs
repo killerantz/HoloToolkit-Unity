@@ -16,13 +16,14 @@ namespace HoloToolkit.Examples.Prototyping
         private Vector3 StartScale;
         private bool isFirstCall = true;
 
-        private TransitionToScale mScaler;
+        private TransitionToScale mTransition;
+        private ScaleToValue mScaler; // support for obsolete transition
 
         protected override void Awake()
         {
-            mScaler = GetComponent<TransitionToScale>();
-
             base.Awake();
+            mTransition = TargetObject.GetComponent<TransitionToScale>();
+            mScaler = TargetObject.GetComponent<ScaleToValue>();
         }
 
         public override void SetIndex(int index)
@@ -37,7 +38,12 @@ namespace HoloToolkit.Examples.Prototyping
 
             float item = Current;
 
-            if (mScaler != null)
+            if (mTransition != null)
+            {
+                mTransition.TargetValue = item * StartScale;
+                mTransition.Run();
+            }
+            else if (mScaler != null)
             {
                 mScaler.TargetValue = item * StartScale;
                 mScaler.StartRunning();
