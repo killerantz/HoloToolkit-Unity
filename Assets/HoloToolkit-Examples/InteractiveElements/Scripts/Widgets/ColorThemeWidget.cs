@@ -14,14 +14,8 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public class ColorThemeWidget : InteractiveThemeWidget
     {
-        [Tooltip("A tag for finding the theme in the scene")]
-        public string ThemeTag = "defaultColor";
-
         [Tooltip("Select the shader color property to animate: _Color is default - overrided by ColorTransition if attached or assigned.")]
         public ColorObject.ShaderColorTypes ShaderColorType = ColorObject.ShaderColorTypes.Color;
-
-        [Tooltip("A component for color transitions: optional")]
-        public ColorTransition ColorTransitionRef; // support obsolete transition
 
         private TransitionToColor mTransition;
 
@@ -32,12 +26,6 @@ namespace HoloToolkit.Examples.InteractiveElements
         {
             // set up the color abstraction layer
             mColorAbstraction = new ColorAbstraction(gameObject, ShaderColorType);
-
-            // get the color tweener
-            if (ColorTransitionRef == null)
-            {
-                ColorTransitionRef = GetComponent<ColorTransition>();
-            }
 
             mTransition = GetComponent<TransitionToColor>();
         }
@@ -61,10 +49,6 @@ namespace HoloToolkit.Examples.InteractiveElements
                 {
                     mTransition.TargetValue = mColorTheme.GetThemeValue(state);
                     mTransition.Run();
-                }
-                if (ColorTransitionRef != null)
-                {
-                    ColorTransitionRef.StartTransition(mColorTheme.GetThemeValue(state));
                 }
                 else
                 {

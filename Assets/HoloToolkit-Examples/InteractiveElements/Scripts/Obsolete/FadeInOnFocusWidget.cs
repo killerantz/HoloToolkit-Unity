@@ -11,6 +11,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// <summary>
     /// An InteractiveWidget for fading in elements based on Interactive focus state
     /// </summary>
+    [System.Obsolete("FadeInOnFocusWidget has be deprecated, please use FadeInOutWidget instead.")]
     [RequireComponent(typeof(Prototyping.FadeColors))]
     public class FadeInOnFocusWidget : InteractiveWidget
     {

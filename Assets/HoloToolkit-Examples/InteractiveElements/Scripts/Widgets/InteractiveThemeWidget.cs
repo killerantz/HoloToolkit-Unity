@@ -268,6 +268,54 @@ namespace HoloToolkit.Examples.InteractiveElements
         }
 
         /// <summary>
+        /// Find a BoolInteractiveTheme by tag
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public BoolInteractiveTheme GetBoolTheme(string tag)
+        {
+            // search locally
+            BoolInteractiveTheme[] boolThemes;
+            BoolInteractiveTheme theme = null;
+
+            if (InteractiveHost != null)
+            {
+                // search locally
+                boolThemes = InteractiveHost.GetComponentsInChildren<BoolInteractiveTheme>();
+                theme = FindBoolTheme(boolThemes, tag);
+            }
+            else
+            {
+                boolThemes = GetComponentsInParent<BoolInteractiveTheme>();
+                theme = FindBoolTheme(boolThemes, tag);
+            }
+
+
+            // search globally
+            if (theme == null)
+            {
+                boolThemes = FindObjectsOfType<BoolInteractiveTheme>();
+                theme = FindBoolTheme(boolThemes, tag);
+            }
+
+            return theme;
+        }
+
+        // compare theme tags
+        public BoolInteractiveTheme FindBoolTheme(BoolInteractiveTheme[] boolThemes, string tag)
+        {
+            for (int i = 0; i < boolThemes.Length; ++i)
+            {
+                if (boolThemes[i].Tag == tag)
+                {
+                    return boolThemes[i];
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Find a AudioInteractiveTheme by tag
         /// </summary>
         /// <param name="tag"></param>

@@ -13,8 +13,6 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public class StringThemeWidget : InteractiveThemeWidget
     {
-        [Tooltip("A tag for finding the theme in the scene")]
-        public string ThemeTag = "defaultString";
 
         [Tooltip("The target Text or TextMesh object : optional, leave blank for self")]
         public GameObject Target;
@@ -38,9 +36,6 @@ namespace HoloToolkit.Examples.InteractiveElements
             mText = Target.GetComponent<Text>();
             mTextMesh = Target.GetComponent<TextMesh>();
 
-            // set the renderer
-            Renderer renderer = Target.GetComponent<Renderer>();
-
             if (mTextMesh == null && mText == null)
             {
                 Debug.LogError("Textmesh or Text is not available to StringThemeWidget!");
@@ -48,17 +43,9 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
         }
 
-        /// <summary>
-        /// Find the theme is none was manually set
-        /// </summary>
-        protected override void Start()
+        public override void SetTheme()
         {
-            if (mStringTheme == null)
-            {
-                mStringTheme = GetStringTheme(ThemeTag);
-            }
-
-            base.Start();
+            mStringTheme = GetStringTheme(ThemeTag);
         }
 
         /// <summary>

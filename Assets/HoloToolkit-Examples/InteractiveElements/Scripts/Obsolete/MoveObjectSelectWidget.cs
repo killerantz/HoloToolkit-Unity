@@ -11,6 +11,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// <summary>
     /// Changes the position of an element based on the Interactive selected state
     /// </summary>
+    [System.Obsolete("MoveObjectSelectWidget is deprecated, please use PositionThemeWidget and a Vector3InteractiveTheme instead.")]
     [RequireComponent(typeof(MoveToPosition))]
     public class MoveObjectSelectWidget : InteractiveWidget
     {

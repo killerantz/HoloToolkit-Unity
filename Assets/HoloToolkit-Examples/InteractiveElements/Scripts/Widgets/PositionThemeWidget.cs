@@ -13,15 +13,13 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public class PositionThemeWidget : InteractiveThemeWidget
     {
-        [Tooltip("A tag for finding the theme in the scene")]
-        public string ThemeTag = "defaultPosition";
 
-        [Tooltip("Move to Position, a component for animating position")]
-        public MoveToPosition MovePositionTweener;
+        [Tooltip("deprecated, use TransformToPosition componet to this object and leave this blank")]
+        public MoveToPosition MovePositionTweener; // support for old transition
+
+        private TransitionToPosition mTransform;
 
         private Vector3InteractiveTheme mPositionTheme;
-
-        private string mCheckThemeTag = "";
 
         /// <summary>
         /// Get Move to Position
@@ -32,25 +30,13 @@ namespace HoloToolkit.Examples.InteractiveElements
             {
                 MovePositionTweener = GetComponent<MoveToPosition>();
             }
-        }
 
-        /// <summary>
-        /// Get the theme
-        /// </summary>
-        private void Start()
-        {
-            if (mPositionTheme == null)
-            {
-                SetTheme();
-            }
-
-            RefreshIfNeeded();
+            mTransform = GetComponent<TransitionToPosition>();
         }
 
         public override void SetTheme()
         {
             mPositionTheme = GetVector3Theme(ThemeTag);
-            mCheckThemeTag = ThemeTag;
         }
 
         /// <summary>
@@ -63,7 +49,12 @@ namespace HoloToolkit.Examples.InteractiveElements
             
             if (mPositionTheme != null)
             {
-                if (MovePositionTweener != null)
+                if(mTransform != null)
+                {
+                    mTransform.TargetValue = mPositionTheme.GetThemeValue(state);
+                    mTransform.Run();
+                }
+                else if (MovePositionTweener != null)
                 {
                     MovePositionTweener.TargetValue = mPositionTheme.GetThemeValue(state);
                     MovePositionTweener.StartRunning();
@@ -72,15 +63,6 @@ namespace HoloToolkit.Examples.InteractiveElements
                 {
                     transform.localPosition = mPositionTheme.GetThemeValue(state);
                 }
-            }
-        }
-
-        private void Update()
-        {
-            if (!mCheckThemeTag.Equals(ThemeTag))
-            {
-                SetTheme();
-                RefreshIfNeeded();
             }
         }
     }

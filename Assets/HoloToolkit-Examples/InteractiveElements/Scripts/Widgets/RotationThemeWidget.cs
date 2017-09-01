@@ -13,9 +13,6 @@ namespace HoloToolkit.Examples.InteractiveElements
     public class RotationThemeWidget : InteractiveThemeWidget
     {
 
-        [Tooltip("Move to Position, a component for animating position")]
-        public RotateToValue RotationTweener; // support obsolete transition
-
         private TransitionToRotation mTransition;
 
         private QuaternionInteractiveTheme mRotationTheme;
@@ -25,11 +22,6 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// </summary>
         private void Awake()
         {
-            if (RotationTweener == null)
-            {
-                RotationTweener = GetComponent<RotateToValue>();
-            }
-
             mTransition = GetComponent<TransitionToRotation>();
         }
 
@@ -52,11 +44,6 @@ namespace HoloToolkit.Examples.InteractiveElements
                 {
                     mTransition.TargetValue = mRotationTheme.GetThemeValue(state);
                     mTransition.Run();
-                }
-                else if (RotationTweener != null)
-                {
-                    RotationTweener.TargetValue = mRotationTheme.GetThemeValue(state);
-                    RotationTweener.StartRunning();
                 }
                 else
                 {

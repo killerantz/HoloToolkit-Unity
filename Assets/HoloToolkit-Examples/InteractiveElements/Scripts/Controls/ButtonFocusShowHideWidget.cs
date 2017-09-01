@@ -25,15 +25,6 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
         }
 
-        protected override void OnDisable()
-        {
-            // ignore if we are the only object in the list
-            if (!SelfHosted)
-            {
-                base.OnDisable();
-            }
-        }
-
         /// <summary>
         /// Set active state
         /// </summary>

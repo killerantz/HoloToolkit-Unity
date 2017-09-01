@@ -13,16 +13,13 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public class ScaleThemeWidget : InteractiveThemeWidget
     {
-        [Tooltip("A tag for finding the theme in the scene")]
-        public string ThemeTag = "defaultScale";
-
-        [Tooltip("Scale to Value component for animating scale")]
+        [Tooltip("deprecated, use TransformToScale componet to this object and leave this blank")]
         public ScaleToValue ScaleTweener;
+
+        private TransitionToScale mTransition;
 
         private Vector3InteractiveTheme mScaleTheme;
         private Material mMaterial;
-        
-        private string mCheckThemeTag = "";
 
         /// <summary>
         /// Get Scale to Value
@@ -33,25 +30,13 @@ namespace HoloToolkit.Examples.InteractiveElements
             {
                 ScaleTweener = GetComponent<ScaleToValue>();
             }
-        }
 
-        /// <summary>
-        /// Get the Theme
-        /// </summary>
-        private void Start()
-        {
-            if (mScaleTheme == null)
-            {
-                SetTheme();
-            }
-
-            RefreshIfNeeded();
+            mTransition = GetComponent<TransitionToScale>();
         }
 
         public override void SetTheme()
         {
             mScaleTheme = GetVector3Theme(ThemeTag);
-            mCheckThemeTag = ThemeTag;
         }
 
         /// <summary>
@@ -64,6 +49,11 @@ namespace HoloToolkit.Examples.InteractiveElements
             
             if (mScaleTheme != null)
             {
+                if(mTransition != null)
+                {
+                    mTransition.TargetValue = mScaleTheme.GetThemeValue(state);
+                    mTransition.Run();
+                }
                 if (ScaleTweener != null)
                 {
                     ScaleTweener.TargetValue = mScaleTheme.GetThemeValue(state);
@@ -73,15 +63,6 @@ namespace HoloToolkit.Examples.InteractiveElements
                 {
                     transform.localScale = mScaleTheme.GetThemeValue(state);
                 }
-            }
-        }
-
-        private void Update()
-        {
-            if (!mCheckThemeTag.Equals(ThemeTag))
-            {
-                SetTheme();
-                RefreshIfNeeded();
             }
         }
     }

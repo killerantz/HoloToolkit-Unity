@@ -12,6 +12,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// updates the button colors based on the button theme
     /// handles two materials
     /// </summary>
+    [System.Obsolete("ButtonThemeWidgetOutline has been deprecated, please use ColorThemeWidgetInstead")]
     public class ButtonThemeWidgetOutline : InteractiveThemeWidget
     {   
         [Tooltip("Button inner material")]

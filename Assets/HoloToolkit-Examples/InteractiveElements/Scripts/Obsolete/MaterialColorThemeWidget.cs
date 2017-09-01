@@ -10,9 +10,10 @@ using System;
 namespace HoloToolkit.Examples.InteractiveElements
 {
     /// <summary>
-    /// An InteractiveThemeWidget for swaping colors on a TextMesh based on Interactive state
+    /// Changes the color of a material based on the Interactive state and the assigned theme
     /// </summary>
-    public class TextMeshColorThemeWidget : InteractiveThemeWidget
+    [Obsolete("MaterialColorThemeWidget is deprecated, please use ColorThemeWidget instead.")]
+    public class MaterialColorThemeWidget : InteractiveThemeWidget
     {
         [Tooltip("A tag for finding the theme in the scene")]
         public string ThemeTag = "defaultColor";
@@ -20,59 +21,65 @@ namespace HoloToolkit.Examples.InteractiveElements
         [Tooltip("A component for color transitions: optional")]
         public ColorTransition ColorBlender;
 
-        private ColorInteractiveTheme mTextColorTheme;
-        private TextMesh mTextMesh;
+        private ColorInteractiveTheme mColorTheme;
+        private Material mMaterial;
 
         private string mCheckThemeTag = "";
 
         void Awake()
         {
-            // get the TextMesh
-            mTextMesh = GetComponent<TextMesh>();
-            if (mTextMesh != null && mTextColorTheme != null)
-            {
-                mTextMesh.color = mTextColorTheme.GetThemeValue(Interactive.ButtonStateEnum.Default);
-            }
-
-            // get the ColorBlender if on self
+            // get the color tweener
             if (ColorBlender == null)
             {
                 ColorBlender = GetComponent<ColorTransition>();
+            }
+
+            // get the renderer and material
+            Renderer renderer = GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                mMaterial = renderer.material;
+            }
+
+            if (mMaterial != null && mColorTheme != null)
+            {
+                mMaterial.color = mColorTheme.GetThemeValue(State);
             }
         }
 
         private void Start()
         {
-            if (mTextColorTheme == null)
+            if (mColorTheme == null)
             {
                 SetTheme();
             }
+
             RefreshIfNeeded();
         }
 
         public override void SetTheme()
         {
-            mTextColorTheme = GetColorTheme(ThemeTag);
+            mColorTheme = GetColorTheme(ThemeTag);
             mCheckThemeTag = ThemeTag;
         }
 
         /// <summary>
-        /// Update colors
+        /// Set or fade the colors
         /// </summary>
         /// <param name="state"></param>
         public override void SetState(Interactive.ButtonStateEnum state)
         {
             base.SetState(state);
 
-            if (mTextColorTheme != null)
+            if (mColorTheme != null)
             {
                 if (ColorBlender != null)
                 {
-                    ColorBlender.StartTransition(mTextColorTheme.GetThemeValue(state));
+                    ColorBlender.StartTransition(mColorTheme.GetThemeValue(state));
                 }
-                else if (mTextMesh != null)
+                else if (mMaterial != null)
                 {
-                    mTextMesh.color = mTextColorTheme.GetThemeValue(state);
+                    mMaterial.color = mColorTheme.GetThemeValue(state);
                 }
             }
         }
@@ -83,6 +90,17 @@ namespace HoloToolkit.Examples.InteractiveElements
             {
                 SetTheme();
                 RefreshIfNeeded();
+            }
+        }
+
+        /// <summary>
+        /// Clean up the materal is created dynamically
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (mMaterial != null)
+            {
+                GameObject.Destroy(mMaterial);
             }
         }
     }

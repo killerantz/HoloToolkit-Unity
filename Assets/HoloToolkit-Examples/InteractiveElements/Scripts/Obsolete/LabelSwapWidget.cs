@@ -10,6 +10,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// <summary>
     /// Swaps the text in the TextMesh based on Interactive state, like "On" and "Off"
     /// </summary>
+    [System.Obsolete("LabelSwapWidget has been deprecated, please use StringThemeWidget and StringInecteractiveTheme instead.")]
     public class LabelSwapWidget : InteractiveWidget
     {
         [Tooltip("string for the default state")]

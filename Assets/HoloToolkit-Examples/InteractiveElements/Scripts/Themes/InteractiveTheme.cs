@@ -12,8 +12,6 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public class InteractiveTheme<Type> : AbstractInteractiveTheme
     {
-        [Tooltip("Tag to help distinguish themes")]
-        public string Tag = "default";
 
         [Tooltip("Default button state")]
         public Type Default;

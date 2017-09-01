@@ -103,17 +103,12 @@ namespace HoloToolkit.Examples.InteractiveElements
         protected bool UserInitiatedEvent = false;
         protected bool mAllowSelection = false;
 
-        protected List<InteractiveWidget> mInteractiveWidgets = new List<InteractiveWidget>();
-
         protected virtual void Awake()
         {
-            print("Awake: " + State);
             if (ParentObject == null)
             {
                 ParentObject = this.gameObject;
             }
-
-            CollectWidgets(forceCollection: true);
         }
 
         /// <summary>
@@ -308,71 +303,12 @@ namespace HoloToolkit.Examples.InteractiveElements
             mCheckHold = false;
         }
 
-        private void CollectWidgets(bool forceCollection = false)
-        {
-            if (mInteractiveWidgets.Count == 0 || forceCollection)
-            {
-                if (ParentObject != null)
-                {
-                    ParentObject.GetComponentsInChildren(mInteractiveWidgets);
-                }
-                for (int i = 0; i < mInteractiveWidgets.Count; ++i)
-                {
-                    if (mInteractiveWidgets[i].InteractiveHost == null)
-                    {
-                        mInteractiveWidgets[i].InteractiveHost = this;
-                    }
-                    else
-                    {
-                        mInteractiveWidgets.RemoveAt(i);
-                        --i;
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Loop through all InteractiveEffects on child elements and update their states
         /// </summary>
         protected void UpdateEffects()
         {
-            CollectWidgets();
-
             CompareStates();
-
-            int interactiveCount = mInteractiveWidgets.Count;
-            for (int i = 0; i < interactiveCount; ++i)
-            {
-                InteractiveWidget widget = mInteractiveWidgets[i];
-                widget.SetState(State);
-
-                int currentCount = mInteractiveWidgets.Count;
-                if (currentCount < interactiveCount)
-                {
-                    Debug.LogWarningFormat("Call to {0}'s SetState removed other interactive widgets. GameObject name: {1}.", widget.GetType(), widget.name);
-                    interactiveCount = currentCount;
-                }
-            }
-        }
-
-        public void RegisterWidget(InteractiveWidget widget)
-        {
-            CollectWidgets();
-            if (mInteractiveWidgets.Contains(widget))
-            {
-                return;
-            }
-
-            mInteractiveWidgets.Add(widget);
-            widget.SetState(State);
-        }
-
-        public void UnregisterWidget(InteractiveWidget widget)
-        {
-            if (mInteractiveWidgets != null)
-            {
-                mInteractiveWidgets.Remove(widget);
-            }
         }
 
 #if UNITY_WSA || UNITY_STANDALONE_WIN

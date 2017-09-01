@@ -13,9 +13,6 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// </summary>
     public class TextureThemeWidget : InteractiveThemeWidget
     {
-        [Tooltip("A tag for finding the theme in the scene")]
-        public string ThemeTag = "defaultTexture";
-
         [Tooltip("The target object with the material to swap textures on : optional, leave blank for self")]
         public GameObject Target;
 
@@ -24,8 +21,6 @@ namespace HoloToolkit.Examples.InteractiveElements
 
         // material to swap the texture on
         private Material mMaterial;
-
-        private string mCheckThemeTag = "";
 
         void Awake()
         {
@@ -53,23 +48,9 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
         }
 
-        /// <summary>
-        /// Find the theme is none was manually set
-        /// </summary>
-        private void Start()
-        {
-            if (mTextureTheme == null)
-            {
-                SetTheme();
-            }
-
-            RefreshIfNeeded();
-        }
-
         public override void SetTheme()
         {
             mTextureTheme = GetTextureTheme(ThemeTag);
-            mCheckThemeTag = ThemeTag;
         }
 
         /// <summary>
@@ -92,15 +73,6 @@ namespace HoloToolkit.Examples.InteractiveElements
             if (mTextureTheme != null)
             {
                 mMaterial.SetTexture("_MainTex", mTextureTheme.GetThemeValue(state));
-            }
-        }
-
-        private void Update()
-        {
-            if(!mCheckThemeTag.Equals(ThemeTag))
-            {
-                SetTheme();
-                RefreshIfNeeded();
             }
         }
 

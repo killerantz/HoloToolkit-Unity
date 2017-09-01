@@ -39,6 +39,18 @@ namespace HoloToolkit.Examples.Prototyping
             return colorAbstraction;
         }
 
+        public void FadeIn()
+        {
+            TargetValue = 1;
+            Run();
+        }
+
+        public void FadeOut()
+        {
+            TargetValue = 0;
+            Run();
+        }
+
         /// <summary>
         /// is the animation complete
         /// </summary>

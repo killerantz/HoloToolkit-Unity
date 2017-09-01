@@ -10,6 +10,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// <summary>
     /// Updates the position of an element based on the Interactive focus state
     /// </summary>
+    [System.Obsolete("MoveObjectWidget has been deprecated, please use PositionThemeWidget and Vector3InteractiveWidget instead.")]
     [RequireComponent(typeof(MoveToPosition))]
     public class MoveObjectWidget : InteractiveWidget
     {

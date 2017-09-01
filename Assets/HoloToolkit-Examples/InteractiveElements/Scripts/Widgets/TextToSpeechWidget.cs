@@ -26,6 +26,11 @@ namespace HoloToolkit.Examples.InteractiveElements
         [Tooltip("Do not append additional words, like in the case of a toggle button stating on or off")]
         public bool SpeakLabelOnly = false;
 
+        [Tooltip("Word spoken in the default toggle state")]
+        public string DefaultStateWord = "Off";
+        [Tooltip("Word spoken in the selected toggle state")]
+        public string SelectedStateWord = "On";
+
         private TextToSpeechManager mSpeechManager;
         private bool mButtonLostFocus = true;
         private Interactive.ButtonStateEnum LastFocusedState;
@@ -122,11 +127,11 @@ namespace HoloToolkit.Examples.InteractiveElements
             {
                 if (State == Interactive.ButtonStateEnum.Focus)
                 {
-                    return Label.text + " off";
+                    return Label.text + " " + DefaultStateWord;
                 }
                 else
                 {
-                    return Label.text + " on";
+                    return Label.text + " " + SelectedStateWord;
                 }
             }
 

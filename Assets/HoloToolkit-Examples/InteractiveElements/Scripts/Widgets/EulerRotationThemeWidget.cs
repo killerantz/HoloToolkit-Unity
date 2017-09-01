@@ -43,12 +43,7 @@ namespace HoloToolkit.Examples.InteractiveElements
                 if(mTransition != null)
                 {
                     mTransition.TargetValue = mRotationTheme.GetThemeValue(state);
-                    mTransition.Run;
-                }
-                if (RotationTweener != null)
-                {
-                    RotationTweener.TargetValue = Quaternion.Euler(mRotationTheme.GetThemeValue(state));
-                    RotationTweener.StartRunning();
+                    mTransition.Run();
                 }
                 else
                 {
