@@ -36,7 +36,10 @@ namespace HoloToolkit.Examples.Prototyping
 
         [Tooltip("Ignore the anchor's z scaling when positioning this object")]
         public bool IgnoreZScale;
-        
+
+        [Tooltip("should this only run in Edit mode, to avoid updating as items move?")]
+        public bool OnlyInEditMode;
+
         protected Vector3 mAnchorScale;
         protected Vector3 mAnchorPosition;
 
@@ -161,7 +164,14 @@ namespace HoloToolkit.Examples.Prototyping
         {
             if (Anchor != null)
             {
+#if UNITY_EDITOR
+                if ((Application.isPlaying && !OnlyInEditMode) || (!Application.isPlaying))
+                {
+                    UpdatePosition();
+                }
+#else
                 UpdatePosition();
+#endif
 
             }
         }

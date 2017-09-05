@@ -11,6 +11,7 @@ namespace HoloToolkit.Examples.InteractiveElements
     /// <summary>
     /// updates the button colors, position and scale based on the button theme
     /// </summary>
+    [System.Obsolete("ButtonThemeWidget is obsolete, please use PositionThemeWidget, ScaleThemeWidget, and/or ColorThemeWidget")]
     public class ButtonThemeWidget : InteractiveThemeWidget
     {
         [Tooltip("tag for the color button theme")]
@@ -145,8 +146,10 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
+
             if(!mCheckScaleThemeTag.Equals(ScaleThemeTag) || !mCheckPositionThemeTag.Equals(PositionThemeTag) || !mCheckColorThemeTag.Equals(ColorThemeTag))
             {
                 SetTheme();

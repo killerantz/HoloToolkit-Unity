@@ -30,6 +30,9 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("Size of the primitive using pixel values from our design program.")]
         public Vector3 ItemSize = new Vector3(594, 246, 15);
 
+        [Tooltip("should this only run in Edit mode, to avoid updating as items move?")]
+        public bool OnlyInEditMode;
+
         /// <summary>
         /// Set the size
         /// </summary>
@@ -42,7 +45,14 @@ namespace HoloToolkit.Examples.Prototyping
         // Update is called once per frame
         void Update()
         {
-            UpdateSize();
+#if UNITY_EDITOR
+            if ((Application.isPlaying && !OnlyInEditMode) || (!Application.isPlaying))
+            {
+                UpdateSize();
+            }
+#else
+                UpdateSize();
+#endif
         }
     }
 }

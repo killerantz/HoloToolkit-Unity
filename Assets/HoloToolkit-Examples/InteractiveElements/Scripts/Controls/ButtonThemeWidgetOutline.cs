@@ -96,8 +96,10 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
+
             if (!mCheckOuterColorThemeTag.Equals(OuterColorThemeTag) || !mCheckInnerColorThemeTag.Equals(InnerColorThemeTag))
             {
                 SetTheme();

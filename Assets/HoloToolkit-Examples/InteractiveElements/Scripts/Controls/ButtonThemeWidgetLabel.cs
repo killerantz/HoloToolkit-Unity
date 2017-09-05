@@ -84,7 +84,7 @@ namespace HoloToolkit.Examples.InteractiveElements
                     mText.color = mColorTheme.GetThemeValue(state);
                 }
 
-                if (ButtonLabels != null)
+                if (ButtonLabels != null && InteractiveHost != null)
                 {
                     if (InteractiveHost.IsSelected)
                     {
@@ -118,13 +118,17 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
+
             if (!mCheckPositionThemeTag.Equals(PositionThemeTag) || !mCheckColorThemeTag.Equals(ColorThemeTag))
             {
                 SetTheme();
                 RefreshIfNeeded();
             }
+
+            
         }
     }
 }

@@ -19,6 +19,7 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// <param name="state"></param>
         public override void SetState(Interactive.ButtonStateEnum state)
         {
+            //print(state + " / " + InteractiveHost.IsSelected + " / " + transform.parent.name);
             base.SetState(state);
             TargetObject.SetActive(InteractiveHost.IsSelected);
         }

@@ -22,6 +22,8 @@ namespace HoloToolkit.Examples.InteractiveElements
         protected ColorInteractiveTheme mColorTheme;
         protected ColorAbstraction mColorAbstraction;
 
+        protected bool inited = false;
+
         private void Awake()
         {
             // set up the color abstraction layer
@@ -45,7 +47,7 @@ namespace HoloToolkit.Examples.InteractiveElements
 
             if (mColorTheme != null)
             {
-                if(mTransition != null)
+                if(mTransition != null && inited)
                 {
                     mTransition.TargetValue = mColorTheme.GetThemeValue(state);
                     mTransition.Run();
@@ -53,11 +55,8 @@ namespace HoloToolkit.Examples.InteractiveElements
                 else
                 {
                     mColorAbstraction.SetColor(mColorTheme.GetThemeValue(state));
+                    inited = true;
                 }
-            }
-            else
-            {
-                IsInited = false;
             }
         }
     }

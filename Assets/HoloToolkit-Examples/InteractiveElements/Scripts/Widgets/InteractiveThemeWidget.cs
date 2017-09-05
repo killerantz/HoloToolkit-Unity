@@ -53,13 +53,14 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// </summary>
         protected override void Update()
         {
-            if (!mCheckThemeTag.Equals(ThemeTag))
+            base.Update();
+            
+            if (!mCheckThemeTag.Equals(ThemeTag) && InteractiveHost != null)
             {
                 SetTheme();
                 RefreshIfNeeded();
+                mCheckThemeTag = ThemeTag;
             }
-
-            mCheckThemeTag = ThemeTag;
         }
 
         /// <summary>
@@ -69,9 +70,20 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// <returns></returns>
         public ColorInteractiveTheme GetColorTheme(string tag)
         {
-            // search locally
-            ColorInteractiveTheme[] colorThemes = InteractiveHost.GetComponentsInChildren<ColorInteractiveTheme>();
-            ColorInteractiveTheme theme = FindColorTheme(colorThemes, tag);
+            ColorInteractiveTheme[] colorThemes;
+            ColorInteractiveTheme theme = null;
+
+            if (InteractiveHost != null)
+            {
+                // search locally
+                colorThemes = InteractiveHost.GetComponentsInChildren<ColorInteractiveTheme>();
+                theme = FindColorTheme(colorThemes, tag);
+            }
+            else
+            {
+                colorThemes = GetComponentsInParent<ColorInteractiveTheme>();
+                theme = FindColorTheme(colorThemes, tag);
+            }
 
             // search globally
             if (theme == null)
@@ -106,9 +118,20 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// <returns></returns>
         public Vector3InteractiveTheme GetVector3Theme(string tag)
         {
-            // search locally
-            Vector3InteractiveTheme[] vector3Themes = InteractiveHost.GetComponentsInChildren<Vector3InteractiveTheme>();
-            Vector3InteractiveTheme theme = FindVector3Theme(vector3Themes, tag);
+            Vector3InteractiveTheme[] vector3Themes;
+            Vector3InteractiveTheme theme = null;
+
+            if (InteractiveHost != null)
+            {
+                // search locally
+                vector3Themes = InteractiveHost.GetComponentsInChildren<Vector3InteractiveTheme>();
+                theme = FindVector3Theme(vector3Themes, tag);
+            }
+            else
+            {
+                vector3Themes = GetComponentsInParent<Vector3InteractiveTheme>();
+                theme = FindVector3Theme(vector3Themes, tag);
+            }
 
             // search globally
             if (theme == null)
@@ -143,9 +166,20 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// <returns></returns>
         public TextureInteractiveTheme GetTextureTheme(string tag)
         {
-            // search locally
-            TextureInteractiveTheme[] textureThemes = InteractiveHost.GetComponentsInChildren<TextureInteractiveTheme>();
-            TextureInteractiveTheme theme = FindTextureTheme(textureThemes, tag);
+            TextureInteractiveTheme[] textureThemes;
+            TextureInteractiveTheme theme = null;
+            
+            if (InteractiveHost != null)
+            {
+                // search locally
+                textureThemes = InteractiveHost.GetComponentsInChildren<TextureInteractiveTheme>();
+                theme = FindTextureTheme(textureThemes, tag);
+            }
+            else
+            {
+                textureThemes = GetComponentsInParent<TextureInteractiveTheme>();
+                theme = FindTextureTheme(textureThemes, tag);
+            }
 
             // search globally
             if (theme == null)

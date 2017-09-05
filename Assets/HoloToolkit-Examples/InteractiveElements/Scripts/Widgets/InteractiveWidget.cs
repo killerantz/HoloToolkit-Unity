@@ -58,7 +58,6 @@ namespace HoloToolkit.Examples.InteractiveElements
             }
 
             State = state;
-			IsInited = true;				
         }
 
         /// <summary>
@@ -67,6 +66,7 @@ namespace HoloToolkit.Examples.InteractiveElements
         /// <returns></returns>
         protected Interactive.ButtonStateEnum GetInteractiveHostState()
         {
+            
             if(InteractiveHost == null)
             {
                 InteractiveHost = GetComponentInParent<Interactive>();
@@ -86,9 +86,11 @@ namespace HoloToolkit.Examples.InteractiveElements
         protected virtual void Update()
         {
             Interactive.ButtonStateEnum state = GetInteractiveHostState();
-            if (State != state)
+
+            if (State != state || (!IsInited && InteractiveHost != null))
             {
                 SetState(state);
+                IsInited = true;
             }
         }
     }

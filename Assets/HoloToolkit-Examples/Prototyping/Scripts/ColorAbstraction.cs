@@ -182,8 +182,29 @@ namespace HoloToolkit.Examples.Prototyping
         public MaterialColorObject(GameObject gameObject) : base(gameObject)
         {
             materialBlock = new MaterialPropertyBlock();
-            gameObject.GetComponent<Renderer>().GetPropertyBlock(materialBlock);
+            Renderer renderer = gameObject.GetComponent<Renderer>();
+            
+            Color color = Color.blue;
+            if (renderer != null)
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    color = renderer.sharedMaterial.GetVector(shaderColorType);
+                }
+                else
+                {
+                    color = renderer.material.GetVector(shaderColorType);
+                }
+#else
+                color = renderer.material.GetVector(shaderColorType);
+#endif
+                materialBlock.SetColor(shaderColorType, color);
 
+            }
+
+            gameObject.GetComponent<Renderer>().SetPropertyBlock(materialBlock);
+            
             isValid = true;
         }
 
@@ -227,7 +248,14 @@ namespace HoloToolkit.Examples.Prototyping
             if (renderer != null)
             {
 #if UNITY_EDITOR
-                mMaterials = renderer.sharedMaterials;
+                if (!Application.isPlaying)
+                {
+                    mMaterials = renderer.sharedMaterials;
+                }
+                else
+                {
+                    mMaterials = renderer.materials;
+                }
 #else
                 mMaterials = renderer.materials;
 #endif

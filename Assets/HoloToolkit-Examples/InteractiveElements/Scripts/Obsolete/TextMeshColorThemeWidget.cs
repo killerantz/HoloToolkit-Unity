@@ -15,16 +15,13 @@ namespace HoloToolkit.Examples.InteractiveElements
     [Obsolete("TextMeshColorThemeWidget as be deprecated, please use ColorThemeWidget instead.")]
     public class TextMeshColorThemeWidget : InteractiveThemeWidget
     {
-        [Tooltip("A tag for finding the theme in the scene")]
-        public string ThemeTag = "defaultColor";
 
         [Tooltip("A component for color transitions: optional")]
         public ColorTransition ColorBlender;
 
         private ColorInteractiveTheme mTextColorTheme;
         private TextMesh mTextMesh;
-
-        private string mCheckThemeTag = "";
+        
 
         void Awake()
         {
@@ -75,15 +72,6 @@ namespace HoloToolkit.Examples.InteractiveElements
                 {
                     mTextMesh.color = mTextColorTheme.GetThemeValue(state);
                 }
-            }
-        }
-
-        private void Update()
-        {
-            if (!mCheckThemeTag.Equals(ThemeTag))
-            {
-                SetTheme();
-                RefreshIfNeeded();
             }
         }
     }

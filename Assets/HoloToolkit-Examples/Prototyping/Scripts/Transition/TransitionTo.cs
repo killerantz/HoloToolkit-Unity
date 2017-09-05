@@ -118,6 +118,7 @@ namespace HoloToolkit.Examples.Prototyping
             }
 
             mStartValue = GetValue();
+
             mLerpTimeCounter = 0;
             IsRunning = true;
         }
@@ -211,13 +212,15 @@ namespace HoloToolkit.Examples.Prototyping
         protected T GetNewValue(T currentValue, float percent)
         {
             T newValue = GetValue();
+
+            float easedPercent = Mathf.Min(EaseCurve.Evaluate(percent), percent);
             switch (LerpType)
             {
                 case LerpTypes.Timed:
-                    newValue = LerpValues(mStartValue, TargetValue, EaseCurve.Evaluate(percent) * percent);
+                    newValue = LerpValues(mStartValue, TargetValue, easedPercent);
                     break;
                 case LerpTypes.Free:
-                    newValue = LerpValues(currentValue, TargetValue, EaseCurve.Evaluate(percent) * percent);
+                    newValue = LerpValues(currentValue, TargetValue, easedPercent);
                     break;
                 default:
                     break;
@@ -253,10 +256,9 @@ namespace HoloToolkit.Examples.Prototyping
         protected void Update()
         {
 #if UNITY_EDITOR
-            if(!Application.isPlaying)
+            if (!Application.isPlaying)
                 return;
 #endif
-            
             // manual animation, only runs when auto started or StartRunning() is called
             if (IsRunning && LerpType != LerpTypes.Free)
             {

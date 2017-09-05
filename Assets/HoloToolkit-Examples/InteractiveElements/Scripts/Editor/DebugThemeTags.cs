@@ -31,10 +31,6 @@ namespace HoloToolkit.Examples.InteractiveElements
             AbstractInteractiveTheme[] themes = GameObject.FindObjectsOfType<AbstractInteractiveTheme>();
             InteractiveThemeWidget[] widgets = GameObject.FindObjectsOfType<InteractiveThemeWidget>();
 
-            List<string> themeTags = new List<string>();
-            List<string> widgetTags = new List<string>();
-            List<string> orphanTags = new List<string>();
-
             List<Orphan> orphans = new List<Orphan>();
             
             for (int i = 0; i < widgets.Length; i++)

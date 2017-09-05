@@ -29,7 +29,7 @@ namespace HoloToolkit.Examples.Prototyping
         {
             mStartValue = GetColorAbstraction().GetColor();
         }
-
+        
         /// <summary>
         /// a color abstraction that colors materials and text objects
         /// </summary>

@@ -37,6 +37,9 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("The x and y margins")]
         public Vector2 EdgeOffset;
 
+        [Tooltip("should this only run in Edit mode, to avoid updating as items move?")]
+        public bool OnlyInEditMode;
+
         private RectTransform mRectTransform;
 
         /// <summary>
@@ -78,7 +81,15 @@ namespace HoloToolkit.Examples.Prototyping
         // Update is called once per frame
         void Update()
         {
-            UpdateScale();
+            
+#if UNITY_EDITOR
+            if ((Application.isPlaying && !OnlyInEditMode) || (!Application.isPlaying))
+            {
+                UpdateScale();
+            }
+#else
+                UpdateScale();
+#endif
         }
     }
 }

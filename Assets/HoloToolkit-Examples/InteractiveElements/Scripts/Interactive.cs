@@ -397,6 +397,7 @@ namespace HoloToolkit.Examples.InteractiveElements
                     State = ButtonStateEnum.Disabled;
                 }
             }
+
             mCheckSelected = IsSelected;
             mCheckEnabled = IsEnabled;
         }

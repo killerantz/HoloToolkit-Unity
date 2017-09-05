@@ -42,6 +42,9 @@ namespace HoloToolkit.Examples.Prototyping
         [Tooltip("The amount of pixel based distance to offset the position along the z axis")]
         public float ZOffset = -5;
 
+        [Tooltip("should this only run in Edit mode, to avoid updating as items move?")]
+        public bool OnlyInEditMode;
+
         /// <summary>
         /// Set the position based on the Anchor's size and the buffers
         /// </summary>
@@ -68,8 +71,17 @@ namespace HoloToolkit.Examples.Prototyping
         {
             if (AnchorTransform != null)
             {
+                
+#if UNITY_EDITOR
+                if ((Application.isPlaying && !OnlyInEditMode) || (!Application.isPlaying))
+                {
+                    UpdateSize();
+                    UpdatePosition();
+                }
+#else
                 UpdateSize();
                 UpdatePosition();
+#endif
             }
         }
     }
