@@ -6,8 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace HoloToolkit.Unity.State
+namespace HoloToolkit.Unity
 {
+    [System.Serializable]
     public class State
     {
         public string Name;
@@ -44,7 +45,7 @@ namespace HoloToolkit.Unity.State
             return currentState;
         }
 
-        public abstract int CompareStates(bool[] states);
+        public abstract State CompareStates(bool[] states);
 
         public abstract State[] GetStates();
 
