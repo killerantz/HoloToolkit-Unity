@@ -11,11 +11,7 @@ namespace HoloToolkit.Unity
     {
         public string Name;
         public UnityEvent Event;
+        public string ClassName;
         public ReceiverBase Receiver;
-
-        public static implicit operator UnityEngine.Object(InteractableEvent v)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

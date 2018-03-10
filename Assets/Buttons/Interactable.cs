@@ -16,8 +16,9 @@ namespace HoloToolkit.Unity
         public int Dimensions = 1;
         public string VoiceCommand = "";
         public bool RequiresGaze = true;
-        public List<ProfileItem> Profiles;
-        public List<InteractableEvent> Events;
+        public List<ProfileItem> Profiles = new List<ProfileItem>();
+        public List<InteractableEvent> Events = new List<InteractableEvent>();
+        public List<ReceiverBase> Receivers = new List<ReceiverBase>();
         
         //collider checks and other alerts
 
