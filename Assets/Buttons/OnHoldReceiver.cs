@@ -20,11 +20,12 @@ namespace HoloToolkit.Unity
 
         public OnHoldReceiver(UnityEvent ev): base(ev)
         {
-            Name = "OnClick";
+            Name = "OnHold";
         }
 
         public override void OnUpdate(State state)
         {
+            Debug.Log("OnHold Update!");
             bool changed = state != lastState;
 
             bool hadDown = hasDown;

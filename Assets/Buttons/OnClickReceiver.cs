@@ -23,8 +23,14 @@ namespace HoloToolkit.Unity
             Name = "OnClick";
         }
 
+        private void SetupEvents()
+        {
+
+        }
+
         public override void OnUpdate(State state)
         {
+            Debug.Log("OnClick Update!");
             bool changed = state != lastState;
 
             bool hadDown = hasDown;

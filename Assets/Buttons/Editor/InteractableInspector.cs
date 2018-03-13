@@ -27,7 +27,6 @@ namespace HoloToolkit.Unity
 
         private Interactable instance;
         private List<InteractableEvent> eventList;
-        private List<ReceiverBase> receiverList;
         private SerializedProperty dataList;
         private static bool showProfiles;
         private string prefKey = "InteractableInspectorProfiles";
@@ -42,7 +41,6 @@ namespace HoloToolkit.Unity
         {
             instance = (Interactable)target;
             eventList = instance.Events;
-            receiverList = instance.Receivers;
 
             listSettings = new List<ListSettings>();
 
@@ -50,7 +48,7 @@ namespace HoloToolkit.Unity
             AdjustListSettings(dataList.arraySize);
             showProfiles = EditorPrefs.GetBool(prefKey, showProfiles);
 
-            setupEventOptions();
+            SetupEventOptions();
 
             enabled = true;
             Debug.Log("Enabled");
@@ -58,7 +56,7 @@ namespace HoloToolkit.Unity
 
         public override void OnInspectorGUI()
         {
-            //base.OnInspectorGUI();
+            base.OnInspectorGUI();
 
             // extend the preference array to handle multiple themes open and scroll values!!!
             // add  messaging!!!
@@ -207,30 +205,22 @@ namespace HoloToolkit.Unity
                 SerializedProperty eventItem = events.GetArrayElementAtIndex(i);
                 SerializedProperty uEvent = eventItem.FindPropertyRelative("Event");
                 SerializedProperty eventName = eventItem.FindPropertyRelative("Name");
-                SerializedProperty receiver = eventItem.FindPropertyRelative("Receiver");
                 SerializedProperty className = eventItem.FindPropertyRelative("ClassName");
                 EditorGUILayout.PropertyField(uEvent, new GUIContent(eventName.stringValue));
 
-                if (receiver == null)
-                {
-                    if (GUILayout.Button(new GUIContent("Update Event")))
-                    {
-                        UpdateEvent(i);
-                    }
-                }
-
-                Debug.Log("Receivers: " +  receiverList.Count);
-
-                if (i > 0 || i ==0)
+                if (i > 0)
                 {
                     // show event dropdown
-                    int id = ReverseLookupEvents(className.stringValue);
+                    int id = InteractableEvent.ReverseLookupEvents(className.stringValue, eventOptions);
                     int newId = EditorGUILayout.Popup("Select Event Type", id, eventOptions);
 
                     if(id != newId)
                     {
-                        Debug.Log(eventOptions[newId]);
                         className.stringValue = eventOptions[newId];
+
+                        Debug.Log(eventOptions[newId] + " / " + className.stringValue);
+
+                        UpdateEvent(i);
                     }
 
                     EditorGUILayout.Space();
@@ -252,8 +242,6 @@ namespace HoloToolkit.Unity
             }
 
             serializedObject.ApplyModifiedProperties();
-
-            AfterSerialization();
         }
 
         private string[] GetEventList()
@@ -291,9 +279,6 @@ namespace HoloToolkit.Unity
             SerializedProperty newItem = dataList.GetArrayElementAtIndex(dataList.arraySize - 1);
 
             listSettings.Add(new ListSettings() { Show = false, Scroll = new Vector2() });
-
-
-
         }
 
         private void AddTheme(int index)
@@ -332,19 +317,23 @@ namespace HoloToolkit.Unity
         {
             SerializedProperty events = serializedObject.FindProperty("Events");
             SerializedProperty eventItem = events.GetArrayElementAtIndex(index);
+            SerializedProperty className = eventItem.FindPropertyRelative("ClassName");
+            SerializedProperty name = eventItem.FindPropertyRelative("Name");
 
             if (index == 0)
             {
-                InteractableEvent iEvent = new InteractableEvent();
-                if (iEvent.Event == null)
-                {
-                    iEvent.Event = new UnityEvent();
-                }
-                iEvent.Receiver = new OnClickReceiver(iEvent.Event);
-                iEvent.Name = iEvent.Receiver.Name;
-                eventList[index] = iEvent;
-                //eventItem.objectReferenceValue = iEvent;
+                name.stringValue = eventList[index].AddOnClick();
             }
+            else
+            {
+                if (!String.IsNullOrEmpty(className.stringValue))
+                {
+                    int receiverIndex = InteractableEvent.ReverseLookupEvents(className.stringValue, eventOptions);
+                    name.stringValue = eventList[index].AddReceiver(eventTypes[receiverIndex]);
+                }
+            }
+
+            //Debug.Log("Update BBBBBBBBBBBBBB: " + className.stringValue + " / " + name.stringValue);
         }
 
         private void RemoveEvent(int index)
@@ -357,117 +346,11 @@ namespace HoloToolkit.Unity
 
         }
 
-        private void setupEventOptions()
+        private void SetupEventOptions()
         {
-            string[] eventGuids = AssetDatabase.FindAssets("t:ReceiverBase");
-            List<ReceiverBase> eventCode = new List<ReceiverBase>();
-
-            List<Type> result = new List<Type>();
-            List<string> names = new List<string>();
-
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblies)
-            {
-                var types = assembly.GetTypes();
-                foreach (var type in types)
-                {
-                    if (type.IsSubclassOf(typeof(ReceiverBase)))
-                    {
-                        result.Add(type);
-                        names.Add(type.Name);
-                    }
-                }
-            }
-
-            eventTypes = result.ToArray();
-            eventOptions = names.ToArray();
-        }
-
-        private int ReverseLookupEvents(string name)
-        {
-            for (int i = 0; i < eventOptions.Length; i++)
-            {
-                if (eventOptions[i] == name)
-                {
-                    return i;
-                }
-            }
-
-            return 0;
-        }
-
-        private ReceiverBase GetReceiver(string name, UnityEvent uEvent)
-        {
-            int index = ReverseLookupEvents(name);
-            Type eventType = eventTypes[index];
-            return (ReceiverBase)Activator.CreateInstance(eventType, uEvent);
-        }
-
-        public void AfterSerialization()
-        {
-            // update the serialized List
-            //Debug.Log("De - Serialized : " + enabled);
-
-            if (!enabled)
-                return;
-
-            for (int i = 0; i < eventList.Count; i++)
-            {
-                InteractableEvent iEvent = eventList[i];
-
-                if (i >= receiverList.Count)
-                {
-                    if (!string.IsNullOrEmpty(iEvent.ClassName))
-                    {
-                        receiverList.Add(GetReceiver(iEvent.ClassName, iEvent.Event));
-                    }
-                    else
-                    {
-                        receiverList.Add(null);
-                    }
-                    
-                }
-
-                if (i == 0)
-                {
-                    Debug.Log("check update : " + iEvent.Receiver + " / " + iEvent.ClassName);
-
-                    if (string.IsNullOrEmpty(iEvent.ClassName) || iEvent.Receiver == null)
-                    {
-                        iEvent.ClassName = typeof(OnClickReceiver).Name;
-                        if (receiverList.Count < 1)
-                        {
-                            receiverList.Add(new OnClickReceiver(iEvent.Event));
-                        }
-                        else
-                        {
-                            receiverList[i] = new OnClickReceiver(iEvent.Event);
-                        }
-                        iEvent.Name = receiverList[i].Name;
-                        iEvent.Receiver = receiverList[i];
-                        eventList[i] = iEvent;
-
-                        Debug.Log("Events updated: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " + receiverList.Count);
-                    }
-                }
-                /*
-                else if (iEvent.Receiver == null && !String.IsNullOrEmpty(iEvent.ClassName))
-                {
-                    int index = ReverseLookupEvents(iEvent.ClassName);
-                    Type eventType = eventTypes[index];
-                    iEvent.Receiver = (ReceiverBase)Activator.CreateInstance(eventType, iEvent.Event);
-                    iEvent.Name = iEvent.Receiver.Name;
-                    eventList[i] = iEvent;
-                }
-                */
-            }
-
-            if (receiverList.Count > eventList.Count)
-            {
-                // remove extra items
-            }
-
-            Debug.Log("------------------------------------------------------- " + receiverList.Count);
+            InteractableEvent.EventLists lists = InteractableEvent.GetEventTypes();
+            eventTypes = lists.EventTypes.ToArray();
+            eventOptions = lists.EventNames.ToArray();
         }
     }
 }
