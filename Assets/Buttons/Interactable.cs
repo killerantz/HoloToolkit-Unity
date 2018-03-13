@@ -9,7 +9,7 @@ namespace HoloToolkit.Unity
 {
     [System.Serializable]
 
-    public class Interactable : MonoBehaviour
+    public class Interactable : MonoBehaviour, IInputClickHandler, IFocusable, IInputHandler
     {
         public bool Enabled;
         public InteractableStates State;
@@ -21,35 +21,93 @@ namespace HoloToolkit.Unity
         public List<ProfileItem> Profiles = new List<ProfileItem>();
         public List<InteractableEvent> Events = new List<InteractableEvent>();
 
+        public bool HasFocus { get; private set; }
+        public bool HasPress { get; private set; }
+        public bool IsDisabled { get; private set; }
+
         private State lastState;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             State = new InteractableStates();
+            SetupEvents();
         }
 
-        private void SetupEvents()
+        protected virtual void SetupEvents()
         {
             InteractableEvent.EventLists lists = InteractableEvent.GetEventTypes();
             
             for (int i = 0; i < Events.Count; i++)
             {
                 Events[i].Receiver = InteractableEvent.GetReceiver(Events[i], lists);
+                // apply settings
             }
         }
 
         //collider checks and other alerts
 
         // state management
+        public virtual void SetFocus(bool focus)
+        {
+            HasFocus = focus;
+            UpdateState();
+        }
 
-        private void Update()
+        public virtual void SetPress(bool press)
+        {
+            HasPress = press;
+            UpdateState();
+        }
+
+        public virtual void SetDisabled(bool disabled)
+        {
+            IsDisabled = disabled;
+            UpdateState();
+        }
+
+        public virtual void OnFocusEnter()
+        {
+            SetFocus(true);
+        }
+
+        public virtual void OnFocusExit()
+        {
+            SetFocus(false);
+        }
+
+        public virtual void OnInputClicked(InputClickedEventData eventData)
+        {
+            if (State.GetState() != InteractableStates.Disabled)
+            {
+                // get the first event in the list and invoke
+                // we should use this one instead of creating our own.
+                // on click reciever could be a stub that just exposes properties
+            }
+        }
+
+        public virtual void OnInputDown(InputEventData eventData)
+        {
+            SetPress(true);
+        }
+
+        public virtual void OnInputUp(InputEventData eventData)
+        {
+            SetPress(false);
+        }
+
+        protected virtual void UpdateState()
+        {
+            State.CompareStates(new bool[] { HasFocus, HasPress, IsDisabled });
+        }
+
+        protected virtual void Update()
         {
             for (int i = 0; i < Events.Count; i++)
             {
                 if (Events[i].Receiver != null)
                 {
-                    print(i + " / " + Events[i].Receiver);
-                    Events[i].Receiver.OnUpdate(State.GetCurrent());
+                    //print(i + " / " + Events[i].Receiver);
+                    Events[i].Receiver.OnUpdate(State.GetState());
                     ReceiverBase reciever = Events[i].Receiver;
 
                     /*
@@ -77,12 +135,12 @@ namespace HoloToolkit.Unity
 
             }
 
-            if (lastState != State.GetCurrent())
+            if (lastState != State.GetState())
             {
                
             }
 
-            lastState = State.GetCurrent();
+            lastState = State.GetState();
         }
 
     }

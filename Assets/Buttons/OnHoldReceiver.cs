@@ -7,10 +7,10 @@ namespace HoloToolkit.Unity
 {
     public class OnHoldReceiver : ReceiverBase
     {
-        [CustomInspectorField(Type = InspectorTypes.Float, Label = "Click Time")]
+        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "Click Time")]
         public float clickTime = 0.5f;
 
-        [CustomInspectorField(Type = InspectorTypes.Float, Label = "Click Prop")]
+        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "Click Prop")]
         public float clickProp { get; set; }
 
         private float clickTimer = 0;
@@ -25,7 +25,6 @@ namespace HoloToolkit.Unity
 
         public override void OnUpdate(State state)
         {
-            Debug.Log("OnHold Update!");
             bool changed = state != lastState;
 
             bool hadDown = hasDown;

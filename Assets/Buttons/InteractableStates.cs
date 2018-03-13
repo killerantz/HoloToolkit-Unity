@@ -11,11 +11,9 @@ namespace HoloToolkit.Unity
         public static State Press = new State() { Index = 2, Bit = 2, Name = "Press" };
         public static State Disabled = new State() { Index = 3, Bit = 4, Name = "Disabled" };
 
-        private State current = Default;
-
-        public State GetCurrent()
+        public override State GetState()
         {
-            return current;
+            return base.GetState();
         }
 
         public override State CompareStates(bool[] states)
@@ -24,24 +22,24 @@ namespace HoloToolkit.Unity
 
             if (bit >= Disabled.Bit)
             {
-                current = Disabled;
-                return Disabled;
+                currentState = Disabled;
+                return currentState;
             }
 
             if (bit == (Focus.Bit | Press.Bit))
             {
-                current = Press;
-                return Press;
+                currentState = Press;
+                return currentState;
             }
 
             if (bit == Focus.Bit)
             {
-                current = Focus;
-                return Focus;
+                currentState = Focus;
+                return currentState;
             }
 
-            current = Default;
-            return Default;
+            currentState = Default;
+            return currentState;
         }
 
         public override State[] GetStates()
