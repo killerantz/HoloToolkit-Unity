@@ -8,10 +8,11 @@ namespace HoloToolkit.Unity
 {
     public class InspectorField : Attribute
     {
-        public enum FieldTypes { Float, Int, String, Bool, Color, DropdownInt, DropdownString, GameObject, ScriptableObject, Object, Material, Texture, Vector2, Vector3, Vector4 }
+        public enum FieldTypes { Float, Int, String, Bool, Color, DropdownInt, DropdownString, GameObject, ScriptableObject, Object, Material, Texture, Vector2, Vector3, Vector4, Curve }
 
         public FieldTypes Type { get; set; }
         public string Label { get; set; }
         public string Tooltip { get; set; }
+        public string[] Options { get; set; }
     }
 }

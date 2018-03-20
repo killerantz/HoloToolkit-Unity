@@ -7,11 +7,8 @@ namespace HoloToolkit.Unity
 {
     public class OnClickReceiver : ReceiverBase
     {
-        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "Click Time")]
-        public float clickTime = 0.5f;
-
-        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "Click Prop")]
-        public float clickProp { get; set; }
+        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "Click Time", Tooltip = "The press and release should happen within this time")]
+        public float ClickTime = 0.5f;
 
         private float clickTimer = 0;
 
@@ -26,19 +23,11 @@ namespace HoloToolkit.Unity
         public override void OnUpdate(State state)
         {
             bool changed = state != lastState;
-
-            Debug.Log(changed);
+            
             bool hadDown = hasDown;
-            if (lastState == InteractableStates.Focus && state == InteractableStates.Press)
-            {
-                hasDown = true;
-            }
-            else
-            {
-                hasDown = false;
-            }
+            hasDown = state == InteractableStates.Press;
 
-            if (hadDown && !hasDown && state == InteractableStates.Focus && clickTimer < clickTime)
+            if (hadDown && !hasDown && state == InteractableStates.Focus && clickTimer < ClickTime)
             {
                 Debug.Log("Click!");
                 uEvent.Invoke();

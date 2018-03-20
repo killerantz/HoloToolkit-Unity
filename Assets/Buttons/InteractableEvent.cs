@@ -15,7 +15,7 @@ namespace HoloToolkit.Unity
         public UnityEvent Event;
         public string ClassName;
         public ReceiverBase Receiver;
-        public List<EventSetting> Settings;
+        public List<PropertySetting> Settings;
 
         public struct EventLists
         {
@@ -24,7 +24,7 @@ namespace HoloToolkit.Unity
         }
 
         [System.Serializable]
-        public struct EventSetting
+        public struct PropertySetting
         {
             public InspectorField.FieldTypes Type;
             public string Label;
@@ -42,30 +42,40 @@ namespace HoloToolkit.Unity
             public Vector2 Vector2Value;
             public Vector3 Vector3Value;
             public Vector4 Vector4Value;
+            public AnimationCurve CurveValue;
+            public string[] Options;
+        }
+
+        [System.Serializable]
+        public struct FieldData
+        {
+            public InspectorField Attributes;
+            public object Value;
+            public string Name;
         }
 
         public struct ReceiverData
         {
             public string Name;
-            public List<InspectorField> Fields;
+            public List<FieldData> Fields;
         }
         
-        public string AddOnClick()
+        public ReceiverData AddOnClick()
         {
-            OnClickReceiver receiver = new OnClickReceiver(Event);
-            ClassName = "OnClickReceiver";
-            return receiver.Name;
+            return AddReceiver(typeof(OnClickReceiver));
         }
 
-        public string AddReceiver(Type type)
+        public ReceiverData AddReceiver(Type type)
         {
             ReceiverBase receiver = (ReceiverBase)Activator.CreateInstance(type, Event);
             // get the settings for the inspector
 
-            List<InspectorField> fields = new List<InspectorField>();
+            List<FieldData> fields = new List<FieldData>();
 
             Type myType = receiver.GetType();
             int index = 0;
+
+            ReceiverData data = new ReceiverData();
 
             //Debug.Log(myType + " / " + myType.GetProperties().Length + " / " + myType.GetFields().Length);
             foreach (PropertyInfo prop in myType.GetProperties())
@@ -73,8 +83,8 @@ namespace HoloToolkit.Unity
                 var attrs = (InspectorField[])prop.GetCustomAttributes(typeof(InspectorField), false);
                 foreach (var attr in attrs)
                 {
-                    fields.Add(attr);
-                    Debug.Log("Props: " + prop.Name + " / " + attr.Type + " / " + attr.Label + " / " + prop.GetValue(receiver, null ));
+                    fields.Add(new FieldData() { Name = prop.Name, Attributes = attr, Value = prop.GetValue(receiver, null)});
+                    //Debug.Log("Props: " + prop.Name + " / " + attr.Type + " / " + attr.Label + " / " + prop.GetValue(receiver, null ));
                 }
 
                 index++;
@@ -86,13 +96,17 @@ namespace HoloToolkit.Unity
                 var attrs = (InspectorField[])field.GetCustomAttributes(typeof(InspectorField), false);
                 foreach (var attr in attrs)
                 {
-                    fields.Add(attr);
-                    Debug.Log("Fields: " + field.Name + " / " + attr.Type + " / " + attr.Label + " / " + field.GetValue(receiver));
+                    fields.Add(new FieldData() { Name = field.Name, Attributes = attr, Value = field.GetValue(receiver) });
+                    //Debug.Log("Fields: " + field.Name + " / " + attr.Type + " / " + attr.Label + " / " + field.GetValue(receiver));
                 }
+
                 index++;
             }
 
-            return receiver.Name;
+            data.Fields = fields;
+            data.Name = receiver.Name;
+
+            return data;
         }
 
         public static EventLists GetEventTypes()
@@ -118,6 +132,78 @@ namespace HoloToolkit.Unity
             lists.EventTypes = eventTypes;
             lists.EventNames = names;
             return lists;
+        }
+
+        public static PropertySetting FieldToProperty(InspectorField attributes, object fieldValue, string fieldName)
+        {
+            PropertySetting setting = new PropertySetting();
+            setting.Type = attributes.Type;
+            setting.Tooltip = attributes.Tooltip;
+            setting.Label = attributes.Label;
+            setting.Options = attributes.Options;
+
+            UpdatePropertySetting(setting, fieldValue);
+
+            return setting;
+        }
+
+        public static PropertySetting UpdatePropertySetting(PropertySetting setting, object update)
+        {
+            switch (setting.Type)
+            {
+                case InspectorField.FieldTypes.Float:
+                    setting.FloatValue = (float)update;
+                    break;
+                case InspectorField.FieldTypes.Int:
+                    setting.IntValue = (int)update;
+                    break;
+                case InspectorField.FieldTypes.String:
+                    setting.StringValue = (string)update;
+                    break;
+                case InspectorField.FieldTypes.Bool:
+                    setting.BoolValue = (bool)update;
+                    break;
+                case InspectorField.FieldTypes.Color:
+                    setting.ColorValue = (Color)update;
+                    break;
+                case InspectorField.FieldTypes.DropdownInt:
+                    setting.IntValue = (int)update;
+                    break;
+                case InspectorField.FieldTypes.DropdownString:
+                    setting.StringValue = (string)update;
+                    break;
+                case InspectorField.FieldTypes.GameObject:
+                    setting.GameObjectValue = (GameObject)update;
+                    break;
+                case InspectorField.FieldTypes.ScriptableObject:
+                    setting.ScriptableObjectValue = (ScriptableObject)update;
+                    break;
+                case InspectorField.FieldTypes.Object:
+                    setting.ObjectValue = (UnityEngine.Object)update;
+                    break;
+                case InspectorField.FieldTypes.Material:
+                    setting.MaterialValue = (Material)update;
+                    break;
+                case InspectorField.FieldTypes.Texture:
+                    setting.TextureValue = (Texture)update;
+                    break;
+                case InspectorField.FieldTypes.Vector2:
+                    setting.Vector2Value = (Vector2)update;
+                    break;
+                case InspectorField.FieldTypes.Vector3:
+                    setting.Vector3Value = (Vector3)update;
+                    break;
+                case InspectorField.FieldTypes.Vector4:
+                    setting.Vector4Value = (Vector4)update;
+                    break;
+                case InspectorField.FieldTypes.Curve:
+                    setting.CurveValue = (AnimationCurve)update;
+                    break;
+                default:
+                    break;
+            }
+
+            return setting;
         }
 
         public static int ReverseLookupEvents(string name, string[] options)
