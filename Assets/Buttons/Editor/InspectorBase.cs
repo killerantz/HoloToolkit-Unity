@@ -8,6 +8,7 @@ namespace HoloToolkit.Unity
     {
         // Colors
         protected readonly static Color defaultColor = new Color(1f, 1f, 1f);
+        protected readonly static Color baseColor = new Color(0.75f, 0.75f, 0.75f);
         protected readonly static Color disabledColor = new Color(0.6f, 0.6f, 0.6f);
         protected readonly static Color warningColor = new Color(1f, 0.85f, 0.6f);
         protected readonly static Color errorColor = new Color(1f, 0.55f, 0.5f);
@@ -15,15 +16,17 @@ namespace HoloToolkit.Unity
         protected readonly static Color titleColor = new Color(0.5f, 0.5f, 0.5f);
         protected readonly static Color sectionColor = new Color(0.85f, 0.9f, 1f); //
 
-        protected readonly static int titleFontSize = 14;
+        protected const int titleFontSize = 14;
+        protected const int defaultFontSize = 10;
 
         protected static int indentOnSectionStart = 0;
 
         public const float DottedLineScreenSpace = 4.65f;
 
         protected delegate void ListButtonEvent(int index);
-        
-        protected virtual void RemoveButton(string label, int index, ListButtonEvent callback)
+        protected delegate void MultiListButtonEvent(int[] arr);
+
+        protected virtual void RemoveButton(GUIContent label, int index, ListButtonEvent callback)
         {
             // delete button
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
@@ -42,7 +45,26 @@ namespace HoloToolkit.Unity
             EditorGUILayout.EndHorizontal();
         }
 
-        protected virtual void AddButton(string label, float padding, int index, ListButtonEvent callback)
+        protected virtual void RemoveButton(GUIContent label, int[] arr, MultiListButtonEvent callback)
+        {
+            // delete button
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+
+            GUIContent buttonLabel = new GUIContent(label);
+            float buttonWidth = GUI.skin.button.CalcSize(buttonLabel).x;
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(buttonLabel, buttonStyle, GUILayout.Width(buttonWidth)))
+            {
+                callback(arr);
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        protected virtual void AddButton(GUIContent label, float padding, int index, ListButtonEvent callback)
         {
             GUIStyle addStyle = new GUIStyle(GUI.skin.button);
             addStyle.fixedHeight = 25;
@@ -59,15 +81,45 @@ namespace HoloToolkit.Unity
             EditorGUILayout.EndHorizontal();
         }
 
+        protected virtual void AddButton(GUIContent label, float padding, int[] arr, MultiListButtonEvent callback)
+        {
+            GUIStyle addStyle = new GUIStyle(GUI.skin.button);
+            addStyle.fixedHeight = 25;
+            GUIContent addLabel = new GUIContent(label);
+            float addButtonWidth = GUI.skin.button.CalcSize(addLabel).x * padding;
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(addLabel, addStyle, GUILayout.Width(addButtonWidth)))
+            {
+                callback(arr);
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+        }
+
         public static void DrawTitle(string title)
         {
-            GUIStyle labelStyle = new GUIStyle(EditorStyles.boldLabel);
-            labelStyle.fontSize = titleFontSize;
-            labelStyle.fixedHeight = titleFontSize * 2;
-            labelStyle.normal.textColor = titleColor;
+            GUIStyle labelStyle = GetLableStyle(titleFontSize, titleColor);
             EditorGUILayout.LabelField(new GUIContent(title), labelStyle);
             GUILayout.Space(titleFontSize * 0.5f);
+        }
 
+        public static void DrawLabel(string title, int size, Color color)
+        {
+            GUIStyle labelStyle = GetLableStyle(size, color);
+            EditorGUILayout.LabelField(new GUIContent(title), labelStyle);
+            GUILayout.Space(titleFontSize * 0.5f);
+        }
+
+        public static GUIStyle GetLableStyle(int size, Color color)
+        {
+            GUIStyle labelStyle = new GUIStyle(EditorStyles.boldLabel);
+            labelStyle.fontStyle = FontStyle.Bold;
+            labelStyle.fontSize = size;
+            labelStyle.fixedHeight = size * 2;
+            labelStyle.normal.textColor = color;
+            return labelStyle;
         }
 
         public static void DrawWarning(string warning)
@@ -134,10 +186,15 @@ namespace HoloToolkit.Unity
         /// <param name="toUpper"></param>
         /// <param name="drawInitially"></param>
         /// <returns></returns>
-        public static bool DrawSectionStart(string headerName, int indent, bool open = true, FontStyle style = FontStyle.Bold, bool toUpper = true)
+        public static bool DrawSectionStart(string headerName, int indent, bool open = true, FontStyle style = FontStyle.Bold, bool toUpper = true, int size = 0)
         {
             GUIStyle sectionStyle = new GUIStyle(EditorStyles.foldout);
             sectionStyle.fontStyle = style;
+            if (size > 0)
+            {
+                sectionStyle.fontSize = size;
+                sectionStyle.fixedHeight = size * 2;
+            }
             Color tColor = GUI.color;
             GUI.color = sectionColor;
 

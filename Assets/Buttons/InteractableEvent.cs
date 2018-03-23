@@ -43,6 +43,8 @@ namespace HoloToolkit.Unity
             public Vector3 Vector3Value;
             public Vector4 Vector4Value;
             public AnimationCurve CurveValue;
+            public AudioClip AudioClipValue;
+            public Quaternion QuaternionValue;
             public string[] Options;
         }
 
@@ -199,6 +201,12 @@ namespace HoloToolkit.Unity
                 case InspectorField.FieldTypes.Curve:
                     setting.CurveValue = (AnimationCurve)update;
                     break;
+                case InspectorField.FieldTypes.Quaternion:
+                    setting.QuaternionValue = (Quaternion)update;
+                    break;
+                case InspectorField.FieldTypes.AudioClip:
+                    setting.AudioClipValue = (AudioClip)update;
+                    break;
                 default:
                     break;
             }
@@ -206,25 +214,26 @@ namespace HoloToolkit.Unity
             return setting;
         }
 
-        public static int ReverseLookupEvents(string name, string[] options)
+        public static ReceiverBase GetReceiver(InteractableEvent iEvent, EventLists lists)
+        {
+            int index = ReverseLookup(iEvent.ClassName, lists.EventNames.ToArray());
+            Type eventType = lists.EventTypes[index];
+            // apply the settings?
+            return (ReceiverBase)Activator.CreateInstance(eventType, iEvent.Event);
+        }
+
+        // put somewhere it makes sense!!!!
+        public static int ReverseLookup(string option, string[] options)
         {
             for (int i = 0; i < options.Length; i++)
             {
-                if (options[i] == name)
+                if (options[i] == option)
                 {
                     return i;
                 }
             }
 
             return 0;
-        }
-
-        public static ReceiverBase GetReceiver(InteractableEvent iEvent, EventLists lists)
-        {
-            int index = ReverseLookupEvents(iEvent.ClassName, lists.EventNames.ToArray());
-            Type eventType = lists.EventTypes[index];
-            // apply the settings?
-            return (ReceiverBase)Activator.CreateInstance(eventType, iEvent.Event);
         }
     }
 

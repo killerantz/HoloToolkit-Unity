@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace HoloToolkit.Unity
 {
@@ -19,6 +20,7 @@ namespace HoloToolkit.Unity
         public string VoiceCommand = "";
         public bool RequiresGaze = true;
         public List<ProfileItem> Profiles = new List<ProfileItem>();
+        public UnityEvent OnClick;
         public List<InteractableEvent> Events = new List<InteractableEvent>();
 
         public bool HasFocus { get; private set; }
@@ -26,6 +28,20 @@ namespace HoloToolkit.Unity
         public bool IsDisabled { get; private set; }
 
         private State lastState;
+
+        // these should get simplified and moved
+        // create a ScriptableObject for managing states!!!!
+        public int GetStateCount()
+        {
+            InteractableStates states = new InteractableStates();
+            return states.GetStates().Length;
+        }
+
+        public State[] GetStates()
+        {
+            InteractableStates states = new InteractableStates();
+            return states.GetStates();
+        }
 
         protected virtual void Awake()
         {
@@ -42,6 +58,11 @@ namespace HoloToolkit.Unity
                 Events[i].Receiver = InteractableEvent.GetReceiver(Events[i], lists);
                 // apply settings
             }
+        }
+
+        protected virtual void SetupThemes()
+        {
+
         }
 
         //collider checks and other alerts
@@ -77,11 +98,9 @@ namespace HoloToolkit.Unity
 
         public virtual void OnInputClicked(InputClickedEventData eventData)
         {
-            if (State.GetState() != InteractableStates.Disabled)
+            if (State.GetState() != InteractableStates.Disabled && eventData.PressType == ButtonPressFilter)
             {
-                // get the first event in the list and invoke
-                // we should use this one instead of creating our own.
-                // on click reciever could be a stub that just exposes properties
+                OnClick.Invoke();
             }
         }
 
