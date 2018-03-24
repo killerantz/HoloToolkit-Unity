@@ -8,10 +8,10 @@ namespace HoloToolkit.Unity
 {
     public class ColorTheme : ShaderTheme
     {
-
         public ColorTheme()
         {
-            Types = new Type[] {typeof(Renderer), typeof(TextMesh), typeof(Text)};
+            Debug.Log("Constructor Default");
+            Types = new Type[] { typeof(Renderer), typeof(TextMesh), typeof(Text) };
             Name = "Color Theme";
             ThemeProperties = new List<ThemeProperty>();
             ThemeProperties.Add(
@@ -25,12 +25,43 @@ namespace HoloToolkit.Unity
 
         public override ThemePropertyValue GetProperty(ThemeProperty property)
         {
-            throw new System.NotImplementedException();
+            ThemePropertyValue color = property.StartValue;
+            TextMesh mesh = Host.GetComponent<TextMesh>();
+            if (mesh != null)
+            {
+                color.Color = mesh.color;
+                return color;
+            }
+
+            Text text = Host.GetComponent<Text>();
+            if (text != null)
+            {
+                color.Color = text.color;
+                return color;
+            }
+
+            return base.GetProperty(property);
         }
 
         public override void SetValue(ThemeProperty property, int index, float percentage)
         {
-            throw new System.NotImplementedException();
+            Color color = Color.Lerp(property.StartValue.Color, property.Values[index].Color, percentage);
+            TextMesh mesh = Host.GetComponent<TextMesh>();
+            if (mesh != null)
+            {
+                mesh.color = color;
+                return;
+            }
+
+            Text text = Host.GetComponent<Text>();
+            if (text != null)
+            {
+                text.color = color;
+                return;
+            }
+
+           base.SetValue(property, index, percentage);
+
         }
     }
 }

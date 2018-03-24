@@ -7,6 +7,7 @@ namespace HoloToolkit.Unity
 {
     public class ScaleTheme : ThemeBase
     {
+
         public ScaleTheme()
         {
             Types = new Type[] { typeof(Transform) };
@@ -22,12 +23,14 @@ namespace HoloToolkit.Unity
 
         public override ThemePropertyValue GetProperty(ThemeProperty property)
         {
-            throw new System.NotImplementedException();
+            ThemePropertyValue start = new ThemePropertyValue();
+            start.Vector3 = Host.transform.localScale;
+            return start;
         }
 
         public override void SetValue(ThemeProperty property, int index, float percentage)
         {
-            throw new System.NotImplementedException();
+            Host.transform.localScale = Vector3.Lerp(property.StartValue.Vector3, property.Values[index].Vector3, percentage);
         }
     }
 }

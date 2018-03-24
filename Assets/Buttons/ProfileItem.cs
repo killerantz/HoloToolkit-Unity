@@ -47,5 +47,14 @@ namespace HoloToolkit.Unity
             return lists;
         }
 
+        public static ThemeBase GetTheme(ThemePropertySettings settings, GameObject host, ThemeLists lists)
+        {
+            int index = InteractableEvent.ReverseLookup(settings.Name, lists.Names.ToArray());
+            Type themeType = lists.Types[index];
+            ThemeBase theme = (ThemeBase)Activator.CreateInstance(themeType, host);
+            theme.Init(host ,settings);
+            return theme;
+        }
+
     }
 }

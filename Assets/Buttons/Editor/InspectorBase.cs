@@ -174,7 +174,8 @@ namespace HoloToolkit.Unity
         {
             GUIStyle styleHR = new GUIStyle(GUI.skin.box);
             styleHR.stretchWidth = true;
-            styleHR.fixedHeight = 2;
+            styleHR.fixedHeight = 1;
+            styleHR.border = new RectOffset(1,1,1,0);
             GUILayout.Box("", styleHR);
         }
 

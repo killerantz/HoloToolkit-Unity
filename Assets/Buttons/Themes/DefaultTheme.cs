@@ -5,23 +5,23 @@ using UnityEngine;
 
 namespace HoloToolkit.Unity
 {
-
-    public class DefaultTheme : ThemeBase
+    public class DefaultTheme : ShaderTheme
     {
+        protected Vector3 startPosition;
+        protected Vector3 startScale;
 
-        // define what types of components can use this theme: Transform, Renderer, TextMesh, 
-        // create list of values
-        // get values from components
-        // respond to state changes
-        // length and order of states depends on states and Interactable
-        // assign values to components
-
-        // color abstract has a property setting for color
-
-        public DefaultTheme() : base()
+        public override void Init(GameObject host, ThemePropertySettings settings)
         {
-            Types = new Type[] {typeof(Transform), typeof(TextMesh), typeof(TextMesh)};
+            base.Init(host, settings);
+            startPosition = Host.transform.localPosition;
+            startScale = Host.transform.localScale;
+        }
+
+        public DefaultTheme()
+        {
+            Types = new Type[] { typeof(Transform), typeof(TextMesh), typeof(TextMesh) };
             Name = "Default: Scale, Offset, Color";
+            ThemeProperties = new List<ThemeProperty>();
             ThemeProperties.Add(
                 new ThemeProperty()
                 {
@@ -47,12 +47,41 @@ namespace HoloToolkit.Unity
 
         public override ThemePropertyValue GetProperty(ThemeProperty property)
         {
-            throw new NotImplementedException();
+            ThemePropertyValue start = new ThemePropertyValue();
+
+            switch (property.Name)
+            {
+                case "Scale":
+                    start.Vector3 = Host.transform.localScale;
+                    break;
+                case "Offset":
+                    start.Vector3 = Host.transform.localPosition;
+                    break;
+                case "Color":
+                    start = base.GetProperty(property);
+                    break;
+                default:
+                    break;
+            }
+            return start;
         }
 
         public override void SetValue(ThemeProperty property, int index, float percentage)
         {
-            throw new NotImplementedException();
+            switch (property.Name)
+            {
+                case "Scale":
+                    Host.transform.localScale = Vector3.Lerp(property.StartValue.Vector3, Vector3.Scale(startScale, property.Values[index].Vector3), percentage);
+                    break;
+                case "Offset":
+                    Host.transform.localPosition = Vector3.Lerp(property.StartValue.Vector3, startPosition + property.Values[index].Vector3, percentage);
+                    break;
+                case "Color":
+                    base.SetValue(property, index, percentage);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

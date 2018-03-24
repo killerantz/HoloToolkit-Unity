@@ -60,7 +60,7 @@ namespace HoloToolkit.Unity
 
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
+            //base.OnInspectorGUI();
 
             // extend the preference array to handle multiple themes open and scroll values!!!
             // add  messaging!!!
@@ -72,7 +72,7 @@ namespace HoloToolkit.Unity
             serializedObject.Update();
 
             EditorGUILayout.Space();
-            DrawTitle("Settings");
+            DrawTitle("Interactable");
             //EditorGUILayout.LabelField(new GUIContent("Interactable Settings"));
 
             EditorGUILayout.BeginVertical("Box");
@@ -107,6 +107,7 @@ namespace HoloToolkit.Unity
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();
+            DrawDivider();
 
             // profiles section
             bool isOPen = DrawSectionStart("Profiles", indentOnSectionStart + 1, showProfiles, GetLableStyle(titleFontSize, titleColor).fontStyle, false, titleFontSize);
@@ -376,6 +377,7 @@ namespace HoloToolkit.Unity
 
             DrawSectionEnd(indentOnSectionStart);
             EditorGUILayout.Space();
+            DrawDivider();
 
             // Events section
             DrawTitle("Events");
@@ -574,14 +576,14 @@ namespace HoloToolkit.Unity
             if (!String.IsNullOrEmpty(className.stringValue))
             {
                 int propIndex = ReverseLookup(className.stringValue, themeOptions);
-                ThemeBase themeBase = (ThemeBase)Activator.CreateInstance(themeTypes[propIndex]);
+                GameObject gameObject = (GameObject)target.objectReferenceValue;
+
+                ThemeBase themeBase = (ThemeBase)Activator.CreateInstance(themeTypes[propIndex], gameObject);
 
                 // does this object have the right component types
                 SerializedProperty isValid = settingsItem.FindPropertyRelative("IsValid");
                 bool valid = false;
                 
-                GameObject gameObject = (GameObject)target.objectReferenceValue;
-
                 bool hasText = false;
                 bool hasRenderer = false;
 

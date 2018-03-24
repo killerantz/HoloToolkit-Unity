@@ -22,6 +22,8 @@ namespace HoloToolkit.Unity
         public List<ProfileItem> Profiles = new List<ProfileItem>();
         public UnityEvent OnClick;
         public List<InteractableEvent> Events = new List<InteractableEvent>();
+        
+        public List<ThemeBase> runningThemesList = new List<ThemeBase>();
 
         public bool HasFocus { get; private set; }
         public bool HasPress { get; private set; }
@@ -47,6 +49,7 @@ namespace HoloToolkit.Unity
         {
             State = new InteractableStates();
             SetupEvents();
+            SetupThemes();
         }
 
         protected virtual void SetupEvents()
@@ -62,7 +65,26 @@ namespace HoloToolkit.Unity
 
         protected virtual void SetupThemes()
         {
+            ProfileItem.ThemeLists lists = ProfileItem.GetThemeTypes();
+            runningThemesList = new List<ThemeBase>();
 
+            for (int i = 0; i < Profiles.Count; i++)
+            {
+                for (int j = 0; j < Profiles[i].Themes.Count; j++)
+                {
+                    Theme theme = Profiles[i].Themes[j];
+                    for (int n = 0; n < theme.Settings.Count; n++)
+                    {
+                        ThemePropertySettings settings = theme.Settings[n];
+                        settings.Theme = ProfileItem.GetTheme(settings, gameObject, lists);
+
+                        theme.Settings[n] = settings;
+                        runningThemesList.Add(settings.Theme);
+                    }
+
+                    Profiles[i].Themes[j] = theme;
+                }
+            }
         }
 
         //collider checks and other alerts
@@ -125,33 +147,17 @@ namespace HoloToolkit.Unity
             {
                 if (Events[i].Receiver != null)
                 {
-                    //print(i + " / " + Events[i].Receiver);
                     Events[i].Receiver.OnUpdate(State.GetState());
                     ReceiverBase reciever = Events[i].Receiver;
-
-                    /*
-                    Type myType = reciever.GetType();
-                    foreach (PropertyInfo prop in myType.GetProperties())
-                    {
-                        var attrs = (InspectorField[])prop.GetCustomAttributes(typeof(InspectorField), false);
-                        foreach (var attr in attrs)
-                        {
-                            Debug.Log("Props: " + prop.Name + " / " + attr.Type + " / " + attr.Label);
-                        }
-                    }
-
-                    foreach (FieldInfo field in myType.GetFields())
-                    {
-                        var attrs = (InspectorField[])field.GetCustomAttributes(typeof(InspectorField), false);
-                        foreach (var attr in attrs)
-                        {
-                            Debug.Log("Fields: " + field.Name + " / " + attr.Type + " / " + attr.Label);
-                        }
-                    }
-                    */
                 }
+            }
 
-
+            for (int i = 0; i < runningThemesList.Count; i++)
+            {
+                if (runningThemesList[i].Loaded)
+                {
+                    runningThemesList[i].OnUpdate(State.GetState().Index);
+                }
             }
 
             if (lastState != State.GetState())

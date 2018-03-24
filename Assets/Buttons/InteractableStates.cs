@@ -42,6 +42,7 @@ namespace HoloToolkit.Unity
             return currentState;
         }
 
+
         public override State[] GetStates()
         {
             return new State[] { Default, Focus, Press, Disabled };

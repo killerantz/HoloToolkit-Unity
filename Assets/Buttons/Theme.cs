@@ -10,6 +10,7 @@ namespace HoloToolkit.Unity
     {
         public string Name;
         public Type Type;
+        public ThemeBase Theme;
         public List<ThemeProperty> Properties;
         public EaseSettings Easing;
         public bool IsValid;

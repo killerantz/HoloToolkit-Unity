@@ -47,6 +47,16 @@ namespace HoloToolkit.Unity
         public int PropId;
         public List<ShaderProperties> ShaderOptions;
         public List<string> ShaderOptionNames;
+
+        public string GetShaderPropId()
+        {
+            if (ShaderOptionNames.Count > PropId)
+            {
+                return ShaderOptionNames[PropId];
+            }
+            
+            return "_Color";
+        }
     }
 
     [System.Serializable]
@@ -129,12 +139,34 @@ namespace HoloToolkit.Unity
         public List<ThemeProperty> ThemeProperties = new List<ThemeProperty>();
         public GameObject Host;
         public EaseSettings Ease;
+        public bool Loaded;
+        private bool hasFirstState = false;
 
         private int lastState = -1;
 
         public abstract void SetValue(ThemeProperty property, int index, float percentage);
 
         public abstract ThemePropertyValue GetProperty(ThemeProperty property);
+
+        public virtual void Init(GameObject host, ThemePropertySettings settings)
+        {
+            Host = host;
+
+            for (int i = 0; i < settings.Properties.Count; i++)
+            {
+                ThemeProperty prop = ThemeProperties[i];
+                prop.ShaderOptionNames = settings.Properties[i].ShaderOptionNames;
+                prop.ShaderOptions = settings.Properties[i].ShaderOptions;
+                prop.PropId = settings.Properties[i].PropId;
+                prop.Values = settings.Properties[i].Values;
+                
+                ThemeProperties[i] = prop;
+            }
+
+            Ease = settings.Easing;
+            Loaded = true;
+
+        }
 
         protected float LerpFloat(float s, float e, float t)
         {
@@ -154,8 +186,16 @@ namespace HoloToolkit.Unity
                 {
                     ThemeProperty current = ThemeProperties[i];
                     current.StartValue = GetProperty(current);
-                    Ease.Start();
-                    SetValue(current, state, Ease.GetCurved());
+                    if (hasFirstState)
+                    {
+                        Ease.Start();
+                        SetValue(current, state, Ease.GetCurved());
+                    }
+                    else
+                    {
+                        SetValue(current, state, 1);
+                        hasFirstState = true;
+                    }
                     ThemeProperties[i] = current;
                 }
             }
@@ -173,35 +213,51 @@ namespace HoloToolkit.Unity
             lastState = state;
         }
 
-        public static MaterialPropertyBlock GetMaterialPropertyBlock(GameObject gameObject, string colorId, string propId)
+        public static MaterialPropertyBlock GetMaterialPropertyBlock(GameObject gameObject, ShaderProperties[] props)
         {
-            MaterialPropertyBlock materialBlock = new MaterialPropertyBlock();
+            MaterialPropertyBlock materialBlock = GetPropertyBlock(gameObject);
             Renderer renderer = gameObject.GetComponent<Renderer>();
-            renderer.GetPropertyBlock(materialBlock);
 
-            Color color = Color.white;
-            float prop = 0;
+            float value;
             if (renderer != null)
             {
                 Material material = GetValidMaterial(renderer);
                 if (material != null)
-                {
-                    if (!String.IsNullOrEmpty(colorId))
+                { 
+                    for (int i = 0; i < props.Length; i++)
                     {
-                        color = material.GetVector(colorId);
-                        materialBlock.SetColor(colorId, color);
-                    }
-
-                    if (!String.IsNullOrEmpty(propId))
-                    {
-                        prop = material.GetFloat(propId);
-                        materialBlock.SetFloat(propId, prop);
+                        ShaderProperties prop = props[i];
+                        switch (props[i].Type)
+                        {
+                            case ShaderPropertyType.Color:
+                                Color color = material.GetVector(prop.Name);
+                                materialBlock.SetColor(prop.Name, color);
+                                break;
+                            case ShaderPropertyType.Float:
+                                value = material.GetFloat(prop.Name);
+                                materialBlock.SetFloat(prop.Name, value);
+                                break;
+                            case ShaderPropertyType.Range:
+                                value = material.GetFloat(prop.Name);
+                                materialBlock.SetFloat(prop.Name, value);
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
 
             gameObject.GetComponent<Renderer>().SetPropertyBlock(materialBlock);
 
+            return materialBlock;
+        }
+
+        public static MaterialPropertyBlock GetPropertyBlock(GameObject gameObject)
+        {
+            MaterialPropertyBlock materialBlock = new MaterialPropertyBlock();
+            Renderer renderer = gameObject.GetComponent<Renderer>();
+            renderer.GetPropertyBlock(materialBlock);
             return materialBlock;
         }
 
