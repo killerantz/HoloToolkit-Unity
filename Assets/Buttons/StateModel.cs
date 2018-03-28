@@ -34,6 +34,11 @@ namespace HoloToolkit.Unity
     public abstract class StateModel
     {
         protected State currentState;
+
+        public StateModel(State defaultState)
+        {
+            currentState = defaultState;
+        }
         
         public virtual void SetSate(State state)
         {

@@ -11,6 +11,11 @@ namespace HoloToolkit.Unity
         public static State Press = new State() { Index = 2, Bit = 2, Name = "Press" };
         public static State Disabled = new State() { Index = 3, Bit = 4, Name = "Disabled" };
 
+        public InteractableStates(State defaultState) : base(defaultState)
+        {
+
+        }
+
         public override State GetState()
         {
             return base.GetState();

@@ -35,19 +35,19 @@ namespace HoloToolkit.Unity
         // create a ScriptableObject for managing states!!!!
         public int GetStateCount()
         {
-            InteractableStates states = new InteractableStates();
+            InteractableStates states = new InteractableStates(InteractableStates.Default);
             return states.GetStates().Length;
         }
 
         public State[] GetStates()
         {
-            InteractableStates states = new InteractableStates();
+            InteractableStates states = new InteractableStates(InteractableStates.Default);
             return states.GetStates();
         }
 
         protected virtual void Awake()
         {
-            State = new InteractableStates();
+            State = new InteractableStates(InteractableStates.Default);
             SetupEvents();
             SetupThemes();
         }
@@ -73,16 +73,25 @@ namespace HoloToolkit.Unity
                 for (int j = 0; j < Profiles[i].Themes.Count; j++)
                 {
                     Theme theme = Profiles[i].Themes[j];
-                    for (int n = 0; n < theme.Settings.Count; n++)
-                    {
-                        ThemePropertySettings settings = theme.Settings[n];
-                        settings.Theme = ProfileItem.GetTheme(settings, gameObject, lists);
+                    if (Profiles[i].Target != null) {
+                        for (int n = 0; n < theme.Settings.Count; n++)
+                        {
+                            ThemePropertySettings settings = theme.Settings[n];
 
-                        theme.Settings[n] = settings;
-                        runningThemesList.Add(settings.Theme);
+                            settings.Theme = ProfileItem.GetTheme(settings, Profiles[i].Target, lists);
+
+                            theme.Settings[n] = settings;
+                            if (theme != null)
+                            {
+                                runningThemesList.Add(settings.Theme);
+                            }
+                        }
+
+                        if (theme != null)
+                        {
+                            Profiles[i].Themes[j] = theme;
+                        }
                     }
-
-                    Profiles[i].Themes[j] = theme;
                 }
             }
         }
@@ -162,7 +171,7 @@ namespace HoloToolkit.Unity
 
             if (lastState != State.GetState())
             {
-               
+
             }
 
             lastState = State.GetState();

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HoloToolkit.Unity
 {
-    public class DefaultTheme : ShaderTheme
+    public class ScaleOffsetColorTheme : ColorTheme
     {
         protected Vector3 startPosition;
         protected Vector3 startScale;
@@ -17,9 +17,9 @@ namespace HoloToolkit.Unity
             startScale = Host.transform.localScale;
         }
 
-        public DefaultTheme()
+        public ScaleOffsetColorTheme()
         {
-            Types = new Type[] { typeof(Transform), typeof(TextMesh), typeof(TextMesh) };
+            Types = new Type[] { typeof(Transform), typeof(TextMesh), typeof(TextMesh), typeof(Renderer) };
             Name = "Default: Scale, Offset, Color";
             ThemeProperties = new List<ThemeProperty>();
             ThemeProperties.Add(
@@ -77,6 +77,7 @@ namespace HoloToolkit.Unity
                     Host.transform.localPosition = Vector3.Lerp(property.StartValue.Vector3, startPosition + property.Values[index].Vector3, percentage);
                     break;
                 case "Color":
+                    //Debug.Log(Host.name + " / " + property.StartValue.Color + " / " + property.Values[index].Color + " / " + percentage);
                     base.SetValue(property, index, percentage);
                     break;
                 default:

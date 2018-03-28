@@ -1,504 +1,150 @@
-﻿using HoloToolkit.Unity.InputModule;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
 
 namespace HoloToolkit.Unity
 {
-    [CustomEditor(typeof(Interactable))]
-    public class InteractableInspector : InspectorBase
+    [CustomEditor(typeof(Theme))]
+    public class ThemeInspector : InspectorBase
     {
-
-        public struct ListSettings
-        {
-            public bool Show;
-            public Vector2 Scroll;
-        }
-
-        public struct EventSettings
-        {
-            public bool Show;
-            public Vector2 Scroll;
-        }
-
-        private Interactable instance;
+        private Theme instance;
         private List<InteractableEvent> eventList;
-        private SerializedProperty profileList;
+        private SerializedProperty settings;
         private static bool showProfiles;
         private string prefKey = "InteractableInspectorProfiles";
-        private List<ListSettings> listSettings;
-        private List<EventSettings> eventSettings;
+        private List<InteractableInspector.ListSettings> listSettings;
         private bool enabled = false;
 
-        private string[] eventOptions;
-        private Type[] eventTypes;
-        private string[] themeOptions;
         private Type[] themeTypes;
-        private string[] shaderOptions;
+        private string[] themeOptions;
 
         private static bool ProfilesSetup = false;
 
         private void OnEnable()
         {
-            instance = (Interactable)target;
-            eventList = instance.Events;
+            instance = (Theme)target;
 
-            listSettings = new List<ListSettings>();
+            listSettings = new List<InteractableInspector.ListSettings>();
 
-            profileList = serializedObject.FindProperty("Profiles");
-            AdjustListSettings(profileList.arraySize);
+            settings = serializedObject.FindProperty("Profiles");
+            AdjustListSettings(settings.arraySize);
             showProfiles = EditorPrefs.GetBool(prefKey, showProfiles);
-
-            SetupEventOptions();
+            
             SetupThemeOptions();
 
             enabled = true;
         }
 
+
         public override void OnInspectorGUI()
         {
+
+            //!!!!! need access to a game object to get shader info
+            //!!!!! need access to states to get state info
+
             //base.OnInspectorGUI();
-
-            // extend the preference array to handle multiple themes open and scroll values!!!
-            // add  messaging!!!
-            // handle dimensions
-            // add profiles
-            // add themes
-            // handle/display properties from themes
-
             serializedObject.Update();
-
-            EditorGUILayout.Space();
-            DrawTitle("Interactable");
-            //EditorGUILayout.LabelField(new GUIContent("Interactable Settings"));
-
-            EditorGUILayout.BeginVertical("Box");
-
-            //standard UI
-            SerializedProperty enabled = serializedObject.FindProperty("Enabled");
-            enabled.boolValue = EditorGUILayout.Toggle(new GUIContent("Enabled", "Is this Interactable Enabled?"), enabled.boolValue);
-
-            SerializedProperty selected = serializedObject.FindProperty("ButtonPressFilter");
-            selected.enumValueIndex = (int)(InteractionSourcePressInfo)EditorGUILayout.EnumPopup(new GUIContent("Interact Filter", "Input source for this Interactable, Default: Select"), (InteractionSourcePressInfo)selected.enumValueIndex);
-
-            // should IsGlobal only show up on specific press types and indent?
-            SerializedProperty isGlobal = serializedObject.FindProperty("IsGlobal");
-            isGlobal.boolValue = EditorGUILayout.Toggle(new GUIContent("Is Global", "Like a modal, does not require focus"), isGlobal.boolValue);
-
-            SerializedProperty voiceCommands = serializedObject.FindProperty("VoiceCommand");
-            voiceCommands.stringValue = EditorGUILayout.TextField(new GUIContent("Voice Command", "A voice command to trigger the click event"), voiceCommands.stringValue);
 
             string minus = "\u2212";
             GUIStyle smallButton = new GUIStyle(EditorStyles.miniButton);
             float minusButtonWidth = GUI.skin.button.CalcSize(new GUIContent(minus)).x;
 
-            // show requires gaze is voice command has a value
-            if (!string.IsNullOrEmpty(voiceCommands.stringValue))
+            if (settings.arraySize < 1)
             {
-                EditorGUI.indentLevel = indentOnSectionStart + 1;
+                AddThemeProperty(new int[] { 0 });
+            }
 
-                SerializedProperty requireGaze = serializedObject.FindProperty("RequiresGaze");
-                requireGaze.boolValue = EditorGUILayout.Toggle(new GUIContent("Requires Gaze", "Does the voice command require gazing at this interactable?"), requireGaze.boolValue);
+            for (int n = 0; n < settings.arraySize; n++)
+            {
+                SerializedProperty settingsItem = settings.GetArrayElementAtIndex(n);
+                SerializedProperty className = settingsItem.FindPropertyRelative("Name");
 
                 EditorGUI.indentLevel = indentOnSectionStart;
-            }
 
-            SerializedProperty dimensions = serializedObject.FindProperty("Dimensions");
-            dimensions.intValue = EditorGUILayout.IntField(new GUIContent("Dimensions", "Toggle or squence button levels"), dimensions.intValue);
-
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.Space();
-            DrawDivider();
-
-            string profileTitle = "Profiles";
-            if (!ProfilesSetup && !showProfiles)
-            {
-                DrawError("Profiles need to be setup or has errors!");
-            }
-
-            // profiles section
-            bool isOPen = DrawSectionStart(profileTitle, indentOnSectionStart + 1, showProfiles, GetLableStyle(titleFontSize, titleColor).fontStyle, false, titleFontSize);
-
-            if (showProfiles != isOPen)
-            {
-                showProfiles = isOPen;
-                EditorPrefs.SetBool(prefKey, showProfiles);
-            }
-
-            if (profileList.arraySize < 1)
-            {
-                AddProfile(0);
-            }
-
-            int validProfileCnt = 0;
-            int themeCnt = 0;
-
-            if (showProfiles)
-            {
-                for (int i = 0; i < profileList.arraySize; i++)
-                {
-                    EditorGUILayout.BeginVertical("Box");
-                    // get profiles
-                    SerializedProperty sItem = profileList.GetArrayElementAtIndex(i);
-                    EditorGUI.indentLevel = indentOnSectionStart;
-
-                    SerializedProperty gameObject = sItem.FindPropertyRelative("Target");
-                    string targetName = "Profile " + (i+1);
-                    if (gameObject.objectReferenceValue != null)
-                    {
-                        targetName = gameObject.objectReferenceValue.name;
-                        validProfileCnt++;
-                    }
-
-                    EditorGUILayout.BeginHorizontal();
-                    DrawLabel(targetName, 12, baseColor);
-                   
-                    if (GUILayout.Button(new GUIContent(minus, "Remove Profile"), smallButton, GUILayout.Width(minusButtonWidth)))
-                    {
-                        RemoveProfile(i);
-                    }
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUI.indentLevel = indentOnSectionStart + 1;
-                    EditorGUILayout.PropertyField(gameObject, new GUIContent("Target", "Target gameObject for this theme properties to manipulate"));
-                    
-                    // get themes
-                    SerializedProperty themes = sItem.FindPropertyRelative("Themes");
-
-                    // make sure there are enough themes as dimensions
-                    if (themes.arraySize > dimensions.intValue)
-                    {
-                        // make sure there are not more themes than dimensions
-                    }
-
-                    if (themes.arraySize < dimensions.intValue)
-                    {
-                        int cnt = themes.arraySize;
-                        for (int j = cnt; j < dimensions.intValue; j++)
-                        {
-                            themes.InsertArrayElementAtIndex(themes.arraySize);
-                            SerializedProperty theme = themes.GetArrayElementAtIndex(themes.arraySize - 1);
-
-                            // make sure there is only one or make unique
-                            string[] themeLocations = AssetDatabase.FindAssets("DefaultTheme t:Theme");
-                            if (themeLocations.Length > 0)
-                            {
-                                string path = AssetDatabase.GUIDToAssetPath(themeLocations[0]);
-                                Theme defaultTheme = (Theme)AssetDatabase.LoadAssetAtPath(path, typeof(Theme));
-                                theme.objectReferenceValue = defaultTheme;
-                            }
-                        }
-                    }
-
-                    for (int t = 0; t < themes.arraySize; t++)
-                    {
-                        SerializedProperty themeItem = themes.GetArrayElementAtIndex(themes.arraySize - 1);
-                        EditorGUILayout.PropertyField(themeItem, new GUIContent("Theme", "Theme properties for interation feedback"));
-
-                        // we need the theme and target in order to figure out what properties to expose in the list
-                        // or do we show them all and show alerts when a theme property is not compatable
-                        if (themeItem.objectReferenceValue != null && gameObject.objectReferenceValue)
-                        {
-                            SerializedProperty hadDefault = sItem.FindPropertyRelative("HadDefaultTheme");
-                            hadDefault.boolValue = true;
-                            EditorGUI.indentLevel = indentOnSectionStart + 2;
-
-                            string prefKey = target.name + "Profiles" + i + "_Theme" + t + "_Edit";
-                            bool showSettings = EditorPrefs.GetBool(prefKey);
-
-                            ListSettings settings = listSettings[i];
-                            bool show = DrawSectionStart(themeItem.objectReferenceValue.name + " (Click to edit)", indentOnSectionStart + 3, showSettings, FontStyle.Normal, false);
-
-                            if (show != showSettings)
-                            {
-                                EditorPrefs.SetBool(prefKey, show);
-                            }
-
-                            // redundent!!!!
-                            settings.Show = show;
-
-                            if (show)
-                            {
-                                GUIStyle box = new GUIStyle(GUI.skin.box);
-                                box.margin.left = 30;
-
-                                GUILayout.Space(5);
-                                SerializedObject themeObj = new SerializedObject(themeItem.objectReferenceValue);
-                                themeObj.Update();
-
-                                SerializedProperty themeObjSettings = themeObj.FindProperty("Settings");
-
-                                if (themeObjSettings.arraySize < 1)
-                                {
-                                    AddThemeProperty(new int[] { i, t, 0 });
-                                }
-
-                                for (int n = 0; n < themeObjSettings.arraySize; n++)
-                                {
-                                    SerializedProperty settingsItem = themeObjSettings.GetArrayElementAtIndex(n);
-                                    SerializedProperty className = settingsItem.FindPropertyRelative("Name");
-
-                                    EditorGUI.indentLevel = indentOnSectionStart;
-
-                                    EditorGUILayout.BeginVertical(box);
-                                    // a dropdown for the type of theme, they should make sense
-                                    // show event dropdown
-                                    int id = ReverseLookup(className.stringValue, themeOptions);
-
-                                    EditorGUILayout.BeginHorizontal();
-                                    int newId = EditorGUILayout.Popup("Theme Property", id, themeOptions);
-
-                                    if (n > 0) {
-                                        if (GUILayout.Button(new GUIContent(minus, "Remove Theme Property"), smallButton, GUILayout.Width(minusButtonWidth)))
-                                        {
-                                            RemoveThemeProperty(new int[] { i, t, n });
-                                        }
-                                    }
-
-                                    EditorGUILayout.EndHorizontal();
-
-                                    if (id != newId)
-                                    {
-                                        className.stringValue = themeOptions[newId];
-
-                                        themeObj = ChangeThemeProperty(n, themeObj, gameObject);
-                                    }
-
-                                    SerializedProperty sProps = settingsItem.FindPropertyRelative("Properties");
-                                    EditorGUI.indentLevel = indentOnSectionStart + 1;
-                                    int idCount = 0;
-                                    for (int p = 0; p < sProps.arraySize; p++)
-                                    {
-                                        SerializedProperty item = sProps.GetArrayElementAtIndex(p);
-
-                                        SerializedProperty propId = item.FindPropertyRelative("PropId");
-                                        SerializedProperty name = item.FindPropertyRelative("Name");
-
-                                        SerializedProperty shaderList = item.FindPropertyRelative("ShaderOptions");
-                                        SerializedProperty shaderNames = item.FindPropertyRelative("ShaderOptionNames");
-
-                                        if (shaderNames.arraySize > 0)
-                                        {
-                                            // show shader property dropdown
-                                            if (idCount < 1)
-                                            {
-                                                GUILayout.Space(5);
-                                            }
-                                            GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
-                                            popupStyle.margin.right = Mathf.RoundToInt(Screen.width * 0.25f);
-                                            propId.intValue = EditorGUILayout.Popup("Material " + name.stringValue + "Id", propId.intValue, SerializedPropertyToOptions(shaderNames), popupStyle);
-                                            idCount++;
-                                        }
-                                    }
-                                    EditorGUI.indentLevel = indentOnSectionStart;
-                                    GUILayout.Space(5);
-                                    DrawDivider();
-
-                                    // show theme properties
-                                    SerializedProperty easing = settingsItem.FindPropertyRelative("Easing");
-                                    SerializedProperty ease = easing.FindPropertyRelative("EaseValues");
-
-                                    ease.boolValue = EditorGUILayout.Toggle(new GUIContent("Easing", "should the theme animate state values"), ease.boolValue);
-                                    if (ease.boolValue)
-                                    {
-                                        EditorGUI.indentLevel = indentOnSectionStart + 1;
-                                        SerializedProperty time = easing.FindPropertyRelative("LerpTime");
-                                        //time.floatValue = 0.5f;
-                                        SerializedProperty curve = easing.FindPropertyRelative("Curve");
-                                        //curve.animationCurveValue = AnimationCurve.Linear(0, 1, 1, 1);
-
-                                        time.floatValue = EditorGUILayout.FloatField(new GUIContent("Duration", "animation duration"), time.floatValue);
-                                        EditorGUILayout.PropertyField(curve, new GUIContent("Animation Curve"));
-
-                                        EditorGUI.indentLevel = indentOnSectionStart;
-                                    }
-
-                                    if (n > 0)
-                                    {
-                                        //RemoveButton("Remove Property", new int[] {i,t,n}, RemoveThemeProperty);
-                                    }
-                                    EditorGUILayout.EndVertical();
-                                }
-
-                                /*
-                                if (GUILayout.Button(new GUIContent("Add Theme Property")))
-                                {
-                                    AddThemeProperty(new int[] { i, t, 0 });
-                                }*/
-
-                                RemoveButton(new GUIContent("+", "Add Theme Property"), new int[] { i, t, 0 }, AddThemeProperty);
-                                // get list of all the properties from the themes
-
-                                RenderThemeSettings(themeObjSettings, instance.GetStates(), 30);
-
-                                themeObj.ApplyModifiedProperties();
-                            }
-
-                            DrawSectionEnd(indentOnSectionStart + 2);
-                            listSettings[i] = settings;
-
-                            validProfileCnt++;
-                        }
-                        else
-                        {
-                            string themeMsg = "Assign a ";
-                            if (gameObject.objectReferenceValue == null)
-                            {
-                                themeMsg += "Target ";
-                            }
-
-                            if (themeItem.objectReferenceValue == null)
-                            {
-                                if (gameObject.objectReferenceValue == null)
-                                {
-                                    themeMsg += "and ";
-                                }
-                                themeMsg += "Theme ";
-                            }
-
-                            themeMsg += "above to add visual effects";
-
-                            SerializedProperty hadDefault = sItem.FindPropertyRelative("HadDefaultTheme");
-                            if (!hadDefault.boolValue && t == 0)
-                            {
-                                string[] themeLocations = AssetDatabase.FindAssets("t:Theme, DefaultTheme");
-                                
-                                if (themeLocations.Length > 0)
-                                {
-                                    string path = AssetDatabase.GUIDToAssetPath(themeLocations[0]);
-                                    Theme defaultTheme = (Theme)AssetDatabase.LoadAssetAtPath(path, typeof(Theme));
-                                    themeItem.objectReferenceValue = defaultTheme;
-                                    if (themeItem.objectReferenceValue != null)
-                                    {
-                                        hadDefault.boolValue = true;
-                                    }
-                                }
-                                else
-                                {
-                                    DrawError("DefaultTheme missing from project!");
-                                }
-                            }
-
-                            DrawError(themeMsg);
-                        }
-                    }
-
-                    EditorGUI.indentLevel = indentOnSectionStart;
-
-                    if (i > 0)
-                    {
-                       // RemoveButton(new GUIContent("Remove Profile"), i, RemoveProfile);
-                    }
-
-                    EditorGUILayout.EndVertical();
-
-                    themeCnt += themes.arraySize;
-
-                }
-
-                if (GUILayout.Button(new GUIContent("Add Profile")))
-                {
-                    AddProfile(profileList.arraySize);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < profileList.arraySize; i++)
-                {
-                    SerializedProperty sItem = profileList.GetArrayElementAtIndex(i);
-                    SerializedProperty gameObject = sItem.FindPropertyRelative("Target");
-                    SerializedProperty themes = sItem.FindPropertyRelative("Themes");
-
-                    if (gameObject.objectReferenceValue != null)
-                    {
-                        validProfileCnt++;
-                    }
-
-                    for (int t = 0; t < themes.arraySize; t++)
-                    {
-                        SerializedProperty themeItem = themes.GetArrayElementAtIndex(themes.arraySize - 1);
-                        if (themeItem.objectReferenceValue != null && gameObject.objectReferenceValue)
-                        {
-                            validProfileCnt++;
-                            SerializedProperty hadDefault = sItem.FindPropertyRelative("HadDefaultTheme");
-                            hadDefault.boolValue = true;
-                        }
-                    }
-
-                    themeCnt += themes.arraySize;
-                }
-            }
-
-            ProfilesSetup = validProfileCnt == profileList.arraySize + themeCnt;
-
-            DrawSectionEnd(indentOnSectionStart);
-            EditorGUILayout.Space();
-            DrawDivider();
-
-            // Events section
-            DrawTitle("Events");
-            //EditorGUILayout.LabelField(new GUIContent("Events"));
-
-            SerializedProperty onClick = serializedObject.FindProperty("OnClick");
-            EditorGUILayout.PropertyField(onClick, new GUIContent("OnClick"));
-
-            SerializedProperty events = serializedObject.FindProperty("Events");
-            
-            for (int i = 0; i < events.arraySize; i++)
-            {
                 EditorGUILayout.BeginVertical("Box");
-                SerializedProperty eventItem = events.GetArrayElementAtIndex(i);
-                SerializedProperty uEvent = eventItem.FindPropertyRelative("Event");
-                SerializedProperty eventName = eventItem.FindPropertyRelative("Name");
-                SerializedProperty className = eventItem.FindPropertyRelative("ClassName");
-                EditorGUILayout.PropertyField(uEvent, new GUIContent(eventName.stringValue));
-
+                // a dropdown for the type of theme, they should make sense
                 // show event dropdown
-                int id = ReverseLookup(className.stringValue, eventOptions);
-                int newId = EditorGUILayout.Popup("Select Event Type", id, eventOptions);
+                int id = ReverseLookup(className.stringValue, themeOptions);
+
+                EditorGUILayout.BeginHorizontal();
+                int newId = EditorGUILayout.Popup("Theme Property", id, themeOptions);
+
+                if (n > 0)
+                {
+                    if (GUILayout.Button(new GUIContent(minus, "Remove Theme Property"), smallButton, GUILayout.Width(minusButtonWidth)))
+                    {
+                        RemoveThemeProperty(new int[] { n });
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
 
                 if (id != newId)
                 {
-                    className.stringValue = eventOptions[newId];
+                    className.stringValue = themeOptions[newId];
 
-                    ChangeEvent(i);
+                    ChangeThemeProperty(n);
                 }
 
-                // show event properties
+                SerializedProperty sProps = settingsItem.FindPropertyRelative("Properties");
                 EditorGUI.indentLevel = indentOnSectionStart + 1;
-                SerializedProperty eventSettings = eventItem.FindPropertyRelative("Settings");
-                for (int j = 0; j < eventSettings.arraySize; j++)
+                int idCount = 0;
+                for (int p = 0; p < sProps.arraySize; p++)
                 {
-                    DisplayPropertyField(eventSettings.GetArrayElementAtIndex(j));
+                    SerializedProperty item = sProps.GetArrayElementAtIndex(p);
+
+                    SerializedProperty propId = item.FindPropertyRelative("PropId");
+                    SerializedProperty name = item.FindPropertyRelative("Name");
+
+                    SerializedProperty shaderList = item.FindPropertyRelative("ShaderOptions");
+                    SerializedProperty shaderNames = item.FindPropertyRelative("ShaderOptionNames");
+
+                    if (shaderNames.arraySize > 0)
+                    {
+                        // show shader property dropdown
+                        if (idCount < 1)
+                        {
+                            GUILayout.Space(5);
+                        }
+                        GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
+                        popupStyle.margin.right = Mathf.RoundToInt(Screen.width * 0.25f);
+                        propId.intValue = EditorGUILayout.Popup("Material " + name.stringValue + "Id", propId.intValue, SerializedPropertyToOptions(shaderNames), popupStyle);
+                        idCount++;
+                    }
                 }
                 EditorGUI.indentLevel = indentOnSectionStart;
+                GUILayout.Space(5);
+                DrawDivider();
 
-                EditorGUILayout.Space();
+                // show theme properties
+                SerializedProperty easing = settingsItem.FindPropertyRelative("Easing");
+                SerializedProperty ease = easing.FindPropertyRelative("EaseValues");
 
-                RemoveButton(new GUIContent("Remove Event"), i, RemoveEvent);
+                ease.boolValue = EditorGUILayout.Toggle(new GUIContent("Easing", "should the theme animate state values"), ease.boolValue);
+                if (ease.boolValue)
+                {
+                    EditorGUI.indentLevel = indentOnSectionStart + 1;
+                    SerializedProperty time = easing.FindPropertyRelative("LerpTime");
+                    //time.floatValue = 0.5f;
+                    SerializedProperty curve = easing.FindPropertyRelative("Curve");
+                    //curve.animationCurveValue = AnimationCurve.Linear(0, 1, 1, 1);
 
+                    time.floatValue = EditorGUILayout.FloatField(new GUIContent("Duration", "animation duration"), time.floatValue);
+                    EditorGUILayout.PropertyField(curve, new GUIContent("Animation Curve"));
+
+                    EditorGUI.indentLevel = indentOnSectionStart;
+                }
                 EditorGUILayout.EndVertical();
             }
 
-            if (eventOptions.Length > 1)
-            {
-                if (GUILayout.Button(new GUIContent("Add Event")))
-                {
-                    AddEvent(events.arraySize);
-                }
-            }
+            RemoveButton(new GUIContent("+", "Add Theme Property"), new int[] { 0 }, AddThemeProperty);
+            // get list of all the properties from the themes
+
+            RenderThemeSettings(settings, instance.GetStates(), 30);
 
             serializedObject.ApplyModifiedProperties();
-        }
-
-        private string[] GetEventList()
-        {
-            return new string[] { };
         }
 
         private void AdjustListSettings(int count)
@@ -508,7 +154,7 @@ namespace HoloToolkit.Unity
             {
                 for (int i = 0; i < diff; i++)
                 {
-                    listSettings.Add(new ListSettings() { Show = false, Scroll = new Vector2() });
+                    listSettings.Add(new InteractableInspector.ListSettings() { Show = false, Scroll = new Vector2() });
                 }
             }
             else if (diff < 0)
@@ -525,48 +171,17 @@ namespace HoloToolkit.Unity
             }
         }
 
-        private void AddProfile(int index)
-        {
-            profileList.InsertArrayElementAtIndex(profileList.arraySize);
-            SerializedProperty newItem = profileList.GetArrayElementAtIndex(profileList.arraySize - 1);
-
-            SerializedProperty newTarget = newItem.FindPropertyRelative("Target");
-            SerializedProperty themes = newItem.FindPropertyRelative("Themes");
-            newTarget.objectReferenceValue = null;
-
-            themes.ClearArray();
-
-            listSettings.Add(new ListSettings() { Show = false, Scroll = new Vector2() });
-        }
-
-        private void RemoveProfile(int index)
-        {
-            profileList.DeleteArrayElementAtIndex(index);
-        }
-        
         private void AddThemeProperty(int[] arr)
         {
-            int profile = arr[0];
-            int theme = arr[1];
-            int index = arr[2];
+            int index = arr[0];
+            
+            settings.InsertArrayElementAtIndex(settings.arraySize);
 
-            SerializedProperty dimensions = serializedObject.FindProperty("Dimensions");
-
-            SerializedProperty sItem = profileList.GetArrayElementAtIndex(profile);
-            SerializedProperty themes = sItem.FindPropertyRelative("Themes");
-            SerializedProperty target = sItem.FindPropertyRelative("Target");
-
-            SerializedProperty themeItem = themes.GetArrayElementAtIndex(theme);
-            SerializedObject themeObj = new SerializedObject(themeItem.objectReferenceValue);
-            themeObj.Update();
-
-            SerializedProperty themeObjSettings = themeObj.FindProperty("Settings");
-            themeObjSettings.InsertArrayElementAtIndex(themeObjSettings.arraySize);
-
-            SerializedProperty settingsItem = themeObjSettings.GetArrayElementAtIndex(themeObjSettings.arraySize-1);
+            SerializedProperty settingsItem = settings.GetArrayElementAtIndex(settings.arraySize - 1);
             SerializedProperty className = settingsItem.FindPropertyRelative("Name");
-            if (themeObjSettings.arraySize == 1) {
-                
+            if (settings.arraySize == 1)
+            {
+
                 className.stringValue = "ScaleOffsetColorTheme";
             }
             else
@@ -581,9 +196,7 @@ namespace HoloToolkit.Unity
             time.floatValue = 0.5f;
             curve.animationCurveValue = AnimationCurve.Linear(0, 1, 1, 1);
 
-            themeObj = ChangeThemeProperty(themeObjSettings.arraySize - 1, themeObj, target, true);
-
-            themeObj.ApplyModifiedProperties();
+            ChangeThemeProperty(settings.arraySize - 1, themeObj, target, true);
         }
 
         private void RemoveThemeProperty(int[] arr)
@@ -608,7 +221,7 @@ namespace HoloToolkit.Unity
 
         private SerializedObject ChangeThemeProperty(int index, SerializedObject themeObj, SerializedProperty target, bool isNew = false)
         {
-            
+
             SerializedProperty themeObjSettings = themeObj.FindProperty("Settings");
             SerializedProperty settingsItem = themeObjSettings.GetArrayElementAtIndex(index);
 
@@ -625,7 +238,7 @@ namespace HoloToolkit.Unity
                 // does this object have the right component types
                 SerializedProperty isValid = settingsItem.FindPropertyRelative("IsValid");
                 bool valid = false;
-                
+
                 bool hasText = false;
                 bool hasRenderer = false;
 
@@ -641,7 +254,7 @@ namespace HoloToolkit.Unity
                                 hasText = true;
                             }
 
-                            if(type == typeof(Renderer))
+                            if (type == typeof(Renderer))
                             {
                                 hasRenderer = true;
                             }
@@ -673,7 +286,7 @@ namespace HoloToolkit.Unity
                     {
                         values.ClearArray();
                     }
-                    
+
                     name.stringValue = properties[i].Name;
                     type.intValue = (int)properties[i].Type;
 
@@ -688,12 +301,12 @@ namespace HoloToolkit.Unity
                         valueName.stringValue = states[j].Name;
 
                         if (isNew)
-                        { 
+                        {
                             SerializedProperty color = valueItem.FindPropertyRelative("Color");
                             color.colorValue = Color.white;
                         }
                     }
-                    
+
                     List<ShaderPropertyType> shaderPropFilter = new List<ShaderPropertyType>();
                     // do we need a propId?
                     if (properties[i].Type == ThemePropertyValueTypes.Color)
@@ -702,7 +315,7 @@ namespace HoloToolkit.Unity
                         {
                             shaderPropFilter.Add(ShaderPropertyType.Color);
                         }
-                        else if(!hasText && !hasRenderer)
+                        else if (!hasText && !hasRenderer)
                         {
                             valid = false;
                         }
@@ -732,7 +345,7 @@ namespace HoloToolkit.Unity
 
                     if (valid && shaderPropFilter.Count > 0)
                     {
-                        ShaderProperties[]  shaderProps = GetShaderProperties(gameObject.gameObject.GetComponent<Renderer>(), shaderPropFilter.ToArray());
+                        ShaderProperties[] shaderProps = GetShaderProperties(gameObject.gameObject.GetComponent<Renderer>(), shaderPropFilter.ToArray());
                         for (int n = 0; n < shaderProps.Length; n++)
                         {
                             shaderList.InsertArrayElementAtIndex(shaderList.arraySize);
@@ -744,7 +357,7 @@ namespace HoloToolkit.Unity
                             shaderListName.stringValue = shaderProps[n].Name;
                             shaderListType.intValue = (int)shaderProps[n].Type;
                             shaderListRange.vector2Value = shaderProps[n].Range;
-                            
+
                             shaderNames.InsertArrayElementAtIndex(shaderNames.arraySize);
                             SerializedProperty names = shaderNames.GetArrayElementAtIndex(shaderNames.arraySize - 1);
                             names.stringValue = shaderProps[n].Name;
@@ -760,12 +373,12 @@ namespace HoloToolkit.Unity
             }
 
             return themeObj;
-            
+
         }
 
         private static void RenderThemeSettings(SerializedProperty settings, State[] states, int margin)
         {
-            
+
             GUIStyle box = new GUIStyle(GUI.skin.box);
             box.margin.left = margin;
             EditorGUILayout.BeginVertical(box);
@@ -780,7 +393,7 @@ namespace HoloToolkit.Unity
                 {
                     SerializedProperty settingsItem = settings.GetArrayElementAtIndex(j);
                     SerializedProperty className = settingsItem.FindPropertyRelative("Name");
-                    
+
                     SerializedProperty properties = settingsItem.FindPropertyRelative("Properties");
 
                     for (int i = 0; i < properties.arraySize; i++)
@@ -887,7 +500,7 @@ namespace HoloToolkit.Unity
             SerializedProperty events = serializedObject.FindProperty("Events");
             events.InsertArrayElementAtIndex(events.arraySize);
             SerializedProperty eventItem = events.GetArrayElementAtIndex(events.arraySize - 1);
-            
+
         }
 
         private void ChangeEvent(int index)
@@ -897,7 +510,7 @@ namespace HoloToolkit.Unity
             SerializedProperty className = eventItem.FindPropertyRelative("ClassName");
             SerializedProperty name = eventItem.FindPropertyRelative("Name");
             SerializedProperty settings = eventItem.FindPropertyRelative("Settings");
-            
+
 
             if (!String.IsNullOrEmpty(className.stringValue))
             {
@@ -956,7 +569,7 @@ namespace HoloToolkit.Unity
                     intValue.intValue = (int)update;
                     break;
                 case InspectorField.FieldTypes.String:
-                    
+
                     stringValue.stringValue = (string)update;
                     break;
                 case InspectorField.FieldTypes.Bool:
@@ -1253,7 +866,5 @@ namespace HoloToolkit.Unity
 
             return false;
         }
-
-        
     }
 }

@@ -10,7 +10,6 @@ namespace HoloToolkit.Unity
     {
         public ColorTheme()
         {
-            Debug.Log("Constructor Default");
             Types = new Type[] { typeof(Renderer), typeof(TextMesh), typeof(Text) };
             Name = "Color Theme";
             ThemeProperties = new List<ThemeProperty>();

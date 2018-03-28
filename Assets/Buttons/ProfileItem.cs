@@ -16,6 +16,7 @@ namespace HoloToolkit.Unity
 
         public GameObject Target;
         public List<Theme> Themes;
+        public bool HadDefaultTheme;
 
         public void OnUpdate()
         {

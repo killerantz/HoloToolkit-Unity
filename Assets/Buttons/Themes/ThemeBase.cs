@@ -144,6 +144,9 @@ namespace HoloToolkit.Unity
 
         private int lastState = -1;
 
+        //! find a way to set the default values of the properties, like scale should be Vector3.one
+        // these should be custom, per theme
+
         public abstract void SetValue(ThemeProperty property, int index, float percentage);
 
         public abstract ThemePropertyValue GetProperty(ThemeProperty property);
@@ -163,7 +166,8 @@ namespace HoloToolkit.Unity
                 ThemeProperties[i] = prop;
             }
 
-            Ease = settings.Easing;
+            Ease = CopyEase(settings.Easing);
+
             Loaded = true;
 
         }
@@ -176,6 +180,16 @@ namespace HoloToolkit.Unity
         protected int LerpInt(int s, int e, float t)
         {
             return Mathf.RoundToInt((e - s) * t) + s;
+        }
+
+        protected EaseSettings CopyEase(EaseSettings ease)
+        {
+            EaseSettings newEase = new EaseSettings();
+            newEase.Curve = ease.Curve;
+            newEase.EaseValues = ease.EaseValues;
+            newEase.LerpTime = ease.LerpTime;
+
+            return newEase;
         }
 
         public virtual void OnUpdate(int state)
