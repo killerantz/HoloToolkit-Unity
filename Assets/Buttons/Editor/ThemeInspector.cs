@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace HoloToolkit.Unity
 {
@@ -10,12 +11,8 @@ namespace HoloToolkit.Unity
     public class ThemeInspector : InspectorBase
     {
         private Theme instance;
-        private List<InteractableEvent> eventList;
         private SerializedProperty settings;
-        private static bool showProfiles;
-        private string prefKey = "InteractableInspectorProfiles";
         private List<InteractableInspector.ListSettings> listSettings;
-        private bool enabled = false;
 
         private Type[] themeTypes;
         private string[] themeOptions;
@@ -28,13 +25,10 @@ namespace HoloToolkit.Unity
 
             listSettings = new List<InteractableInspector.ListSettings>();
 
-            settings = serializedObject.FindProperty("Profiles");
+            settings = serializedObject.FindProperty("Settings");
             AdjustListSettings(settings.arraySize);
-            showProfiles = EditorPrefs.GetBool(prefKey, showProfiles);
             
             SetupThemeOptions();
-
-            enabled = true;
         }
 
 
@@ -43,6 +37,7 @@ namespace HoloToolkit.Unity
 
             //!!!!! need access to a game object to get shader info
             //!!!!! need access to states to get state info
+            //!!!!! need to make sure we refresh the shader list when the target changes
 
             //base.OnInspectorGUI();
             serializedObject.Update();
@@ -142,9 +137,15 @@ namespace HoloToolkit.Unity
             RemoveButton(new GUIContent("+", "Add Theme Property"), new int[] { 0 }, AddThemeProperty);
             // get list of all the properties from the themes
 
-            RenderThemeSettings(settings, instance.GetStates(), 30);
+            RenderThemeSettings(settings, GetStates(), 30);
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private State[] GetStates()
+        {
+            InteractableStates states = new InteractableStates(InteractableStates.Default);
+            return states.GetStates();
         }
 
         private void AdjustListSettings(int count)
@@ -196,34 +197,20 @@ namespace HoloToolkit.Unity
             time.floatValue = 0.5f;
             curve.animationCurveValue = AnimationCurve.Linear(0, 1, 1, 1);
 
-            ChangeThemeProperty(settings.arraySize - 1, themeObj, target, true);
+            ChangeThemeProperty(settings.arraySize - 1, true);
         }
 
         private void RemoveThemeProperty(int[] arr)
         {
-            int profile = arr[0];
-            int theme = arr[1];
-            int index = arr[2];
-
-            SerializedProperty sItem = profileList.GetArrayElementAtIndex(profile);
-            SerializedProperty themes = sItem.FindPropertyRelative("Themes");
-
-            SerializedProperty themeItem = themes.GetArrayElementAtIndex(theme);
-            SerializedObject themeObj = new SerializedObject(themeItem.objectReferenceValue);
-            themeObj.Update();
-
-            SerializedProperty themeObjSettings = themeObj.FindProperty("Settings");
-            themeObjSettings.DeleteArrayElementAtIndex(index);
-
-            themeObj.ApplyModifiedProperties();
+            int index = arr[0];
+            
+            settings.DeleteArrayElementAtIndex(index);
 
         }
 
-        private SerializedObject ChangeThemeProperty(int index, SerializedObject themeObj, SerializedProperty target, bool isNew = false)
+        private void ChangeThemeProperty(int index, bool isNew = false)
         {
-
-            SerializedProperty themeObjSettings = themeObj.FindProperty("Settings");
-            SerializedProperty settingsItem = themeObjSettings.GetArrayElementAtIndex(index);
+            SerializedProperty settingsItem = settings.GetArrayElementAtIndex(index);
 
             SerializedProperty className = settingsItem.FindPropertyRelative("Name");
 
@@ -231,7 +218,7 @@ namespace HoloToolkit.Unity
             if (!String.IsNullOrEmpty(className.stringValue))
             {
                 int propIndex = ReverseLookup(className.stringValue, themeOptions);
-                GameObject gameObject = (GameObject)target.objectReferenceValue;
+                GameObject gameObject = null;// (GameObject)target.objectReferenceValue;
 
                 ThemeBase themeBase = (ThemeBase)Activator.CreateInstance(themeTypes[propIndex], gameObject);
 
@@ -289,9 +276,9 @@ namespace HoloToolkit.Unity
 
                     name.stringValue = properties[i].Name;
                     type.intValue = (int)properties[i].Type;
-
-                    int valueCount = instance.GetStateCount();
-                    State[] states = instance.GetStates();
+                    
+                    State[] states = GetStates();
+                    int valueCount = states.Length;
                     //! can I find out if this has been initiated so I only set defaults first time?
                     for (int j = 0; j < valueCount; j++)
                     {
@@ -371,8 +358,6 @@ namespace HoloToolkit.Unity
                     isValid.boolValue = false;
                 }
             }
-
-            return themeObj;
 
         }
 
@@ -495,146 +480,7 @@ namespace HoloToolkit.Unity
             GUILayout.Space(5);
         }
 
-        private void AddEvent(int index)
-        {
-            SerializedProperty events = serializedObject.FindProperty("Events");
-            events.InsertArrayElementAtIndex(events.arraySize);
-            SerializedProperty eventItem = events.GetArrayElementAtIndex(events.arraySize - 1);
-
-        }
-
-        private void ChangeEvent(int index)
-        {
-            SerializedProperty events = serializedObject.FindProperty("Events");
-            SerializedProperty eventItem = events.GetArrayElementAtIndex(index);
-            SerializedProperty className = eventItem.FindPropertyRelative("ClassName");
-            SerializedProperty name = eventItem.FindPropertyRelative("Name");
-            SerializedProperty settings = eventItem.FindPropertyRelative("Settings");
-
-
-            if (!String.IsNullOrEmpty(className.stringValue))
-            {
-                int receiverIndex = ReverseLookup(className.stringValue, eventOptions);
-                InteractableEvent.ReceiverData data = eventList[index].AddReceiver(eventTypes[receiverIndex]);
-                name.stringValue = data.Name;
-                PropertySettingsList(settings, data.Fields);
-            }
-        }
-
-        private static void PropertySettingsList(SerializedProperty settings, List<InteractableEvent.FieldData> data)
-        {
-            settings.ClearArray();
-
-            for (int i = 0; i < data.Count; i++)
-            {
-                settings.InsertArrayElementAtIndex(settings.arraySize);
-                SerializedProperty settingItem = settings.GetArrayElementAtIndex(settings.arraySize - 1);
-
-                UpdatePropertySettings(settingItem, (int)data[i].Attributes.Type, data[i].Value);
-
-                SerializedProperty type = settingItem.FindPropertyRelative("Type");
-                SerializedProperty tooltip = settingItem.FindPropertyRelative("Tooltip");
-                SerializedProperty label = settingItem.FindPropertyRelative("Label");
-                SerializedProperty options = settingItem.FindPropertyRelative("Options");
-
-                type.enumValueIndex = (int)data[i].Attributes.Type;
-                tooltip.stringValue = data[i].Attributes.Tooltip;
-                label.stringValue = data[i].Attributes.Label;
-                options.ClearArray();
-
-                if (data[i].Attributes.Options != null)
-                {
-                    for (int j = 0; j < data[i].Attributes.Options.Length; j++)
-                    {
-                        options.InsertArrayElementAtIndex(j);
-                        SerializedProperty item = options.GetArrayElementAtIndex(j);
-                        item.stringValue = data[i].Attributes.Options[j];
-                    }
-                }
-            }
-        }
-
-        private static void UpdatePropertySettings(SerializedProperty prop, int type, object update)
-        {
-            SerializedProperty intValue = prop.FindPropertyRelative("IntValue");
-            SerializedProperty stringValue = prop.FindPropertyRelative("StringValue");
-
-            switch ((InspectorField.FieldTypes)type)
-            {
-                case InspectorField.FieldTypes.Float:
-                    SerializedProperty floatValue = prop.FindPropertyRelative("FloatValue");
-                    floatValue.floatValue = (float)update;
-                    break;
-                case InspectorField.FieldTypes.Int:
-                    intValue.intValue = (int)update;
-                    break;
-                case InspectorField.FieldTypes.String:
-
-                    stringValue.stringValue = (string)update;
-                    break;
-                case InspectorField.FieldTypes.Bool:
-                    SerializedProperty boolValue = prop.FindPropertyRelative("BoolValue");
-                    boolValue.boolValue = (bool)update;
-                    break;
-                case InspectorField.FieldTypes.Color:
-                    SerializedProperty colorValue = prop.FindPropertyRelative("ColorValue");
-                    colorValue.colorValue = (Color)update;
-                    break;
-                case InspectorField.FieldTypes.DropdownInt:
-                    intValue.intValue = (int)update;
-                    break;
-                case InspectorField.FieldTypes.DropdownString:
-                    stringValue.stringValue = (string)update;
-                    break;
-                case InspectorField.FieldTypes.GameObject:
-                    SerializedProperty gameObjectValue = prop.FindPropertyRelative("GameObjectValue");
-                    gameObjectValue.objectReferenceValue = (GameObject)update;
-                    break;
-                case InspectorField.FieldTypes.ScriptableObject:
-                    SerializedProperty scriptableObjectValue = prop.FindPropertyRelative("ScriptableObjectValue");
-                    scriptableObjectValue.objectReferenceValue = (ScriptableObject)update;
-                    break;
-                case InspectorField.FieldTypes.Object:
-                    SerializedProperty objectValue = prop.FindPropertyRelative("ObjectValue");
-                    objectValue.objectReferenceValue = (UnityEngine.Object)update;
-                    break;
-                case InspectorField.FieldTypes.Material:
-                    SerializedProperty materialValue = prop.FindPropertyRelative("MaterialValue");
-                    materialValue.objectReferenceValue = (Material)update;
-                    break;
-                case InspectorField.FieldTypes.Texture:
-                    SerializedProperty textureValue = prop.FindPropertyRelative("TextureValue");
-                    textureValue.objectReferenceValue = (Texture)update;
-                    break;
-                case InspectorField.FieldTypes.Vector2:
-                    SerializedProperty vector2Value = prop.FindPropertyRelative("Vector2Value");
-                    vector2Value.vector2Value = (Vector2)update;
-                    break;
-                case InspectorField.FieldTypes.Vector3:
-                    SerializedProperty vector3Value = prop.FindPropertyRelative("Vector3Value");
-                    vector3Value.vector3Value = (Vector3)update;
-                    break;
-                case InspectorField.FieldTypes.Vector4:
-                    SerializedProperty vector4Value = prop.FindPropertyRelative("Vector4Value");
-                    vector4Value.vector4Value = (Vector4)update;
-                    break;
-                case InspectorField.FieldTypes.Curve:
-                    SerializedProperty curveValue = prop.FindPropertyRelative("CurveValue");
-                    curveValue.animationCurveValue = (AnimationCurve)update;
-                    break;
-                case InspectorField.FieldTypes.Quaternion:
-                    SerializedProperty quaternionValue = prop.FindPropertyRelative("QuaternionValue");
-                    quaternionValue.quaternionValue = (Quaternion)update;
-                    break;
-                case InspectorField.FieldTypes.AudioClip:
-                    SerializedProperty audioClip = prop.FindPropertyRelative("AudioClipValue");
-                    audioClip.objectReferenceValue = (AudioClip)update;
-                    break;
-                default:
-                    break;
-            }
-        }
-
+        
         private static string[] GetOptions(SerializedProperty options)
         {
             List<string> list = new List<string>();
@@ -657,115 +503,6 @@ namespace HoloToolkit.Unity
             }
 
             return 0;
-        }
-
-        private static void DisplayPropertyField(SerializedProperty prop)
-        {
-            SerializedProperty type = prop.FindPropertyRelative("Type");
-            SerializedProperty label = prop.FindPropertyRelative("Label");
-            SerializedProperty tooltip = prop.FindPropertyRelative("Tooltip");
-            SerializedProperty options = prop.FindPropertyRelative("Options");
-
-            SerializedProperty intValue = prop.FindPropertyRelative("IntValue");
-            SerializedProperty stringValue = prop.FindPropertyRelative("StringValue");
-
-            switch ((InspectorField.FieldTypes)type.intValue)
-            {
-                case InspectorField.FieldTypes.Float:
-                    SerializedProperty floatValue = prop.FindPropertyRelative("FloatValue");
-                    floatValue.floatValue = EditorGUILayout.FloatField(new GUIContent(label.stringValue, tooltip.stringValue), floatValue.floatValue);
-                    break;
-                case InspectorField.FieldTypes.Int:
-                    intValue.intValue = EditorGUILayout.IntField(new GUIContent(label.stringValue, tooltip.stringValue), intValue.intValue);
-                    break;
-                case InspectorField.FieldTypes.String:
-                    stringValue.stringValue = EditorGUILayout.TextField(new GUIContent(label.stringValue, tooltip.stringValue), stringValue.stringValue);
-                    break;
-                case InspectorField.FieldTypes.Bool:
-                    SerializedProperty boolValue = prop.FindPropertyRelative("BoolValue");
-                    boolValue.boolValue = EditorGUILayout.Toggle(new GUIContent(label.stringValue, tooltip.stringValue), boolValue.boolValue);
-                    break;
-                case InspectorField.FieldTypes.Color:
-                    SerializedProperty colorValue = prop.FindPropertyRelative("ColorValue");
-                    colorValue.colorValue = EditorGUILayout.ColorField(new GUIContent(label.stringValue, tooltip.stringValue), colorValue.colorValue);
-                    break;
-                case InspectorField.FieldTypes.DropdownInt:
-                    intValue.intValue = EditorGUILayout.Popup(label.stringValue, intValue.intValue, GetOptions(options));
-                    break;
-                case InspectorField.FieldTypes.DropdownString:
-                    string[] stringOptions = GetOptions(options);
-                    int selection = GetOptionsIndex(options, stringValue.stringValue);
-                    int newIndex = EditorGUILayout.Popup(label.stringValue, intValue.intValue, stringOptions);
-                    if (selection != newIndex)
-                    {
-                        stringValue.stringValue = stringOptions[newIndex];
-                    }
-                    break;
-                case InspectorField.FieldTypes.GameObject:
-                    SerializedProperty gameObjectValue = prop.FindPropertyRelative("GameObjectValue");
-                    EditorGUILayout.PropertyField(gameObjectValue, new GUIContent(label.stringValue, tooltip.stringValue), false);
-                    break;
-                case InspectorField.FieldTypes.ScriptableObject:
-                    SerializedProperty scriptableObjectValue = prop.FindPropertyRelative("ScriptableObjectValue");
-                    EditorGUILayout.PropertyField(scriptableObjectValue, new GUIContent(label.stringValue, tooltip.stringValue), false);
-                    break;
-                case InspectorField.FieldTypes.Object:
-                    SerializedProperty objectValue = prop.FindPropertyRelative("ObjectValue");
-                    EditorGUILayout.PropertyField(objectValue, new GUIContent(label.stringValue, tooltip.stringValue), true);
-                    break;
-                case InspectorField.FieldTypes.Material:
-                    SerializedProperty materialValue = prop.FindPropertyRelative("MaterialValue");
-                    EditorGUILayout.PropertyField(materialValue, new GUIContent(label.stringValue, tooltip.stringValue), false);
-                    break;
-                case InspectorField.FieldTypes.Texture:
-                    SerializedProperty textureValue = prop.FindPropertyRelative("TextureValue");
-                    EditorGUILayout.PropertyField(textureValue, new GUIContent(label.stringValue, tooltip.stringValue), false);
-                    break;
-                case InspectorField.FieldTypes.Vector2:
-                    SerializedProperty vector2Value = prop.FindPropertyRelative("Vector2Value");
-                    vector2Value.vector2Value = EditorGUILayout.Vector2Field(new GUIContent(label.stringValue, tooltip.stringValue), vector2Value.vector2Value);
-                    break;
-                case InspectorField.FieldTypes.Vector3:
-                    SerializedProperty vector3Value = prop.FindPropertyRelative("Vector3Value");
-                    vector3Value.vector3Value = EditorGUILayout.Vector3Field(new GUIContent(label.stringValue, tooltip.stringValue), vector3Value.vector3Value);
-                    break;
-                case InspectorField.FieldTypes.Vector4:
-                    SerializedProperty vector4Value = prop.FindPropertyRelative("Vector4Value");
-                    vector4Value.vector4Value = EditorGUILayout.Vector4Field(new GUIContent(label.stringValue, tooltip.stringValue), vector4Value.vector4Value);
-                    break;
-                case InspectorField.FieldTypes.Curve:
-                    SerializedProperty curveValue = prop.FindPropertyRelative("CurveValue");
-                    curveValue.animationCurveValue = EditorGUILayout.CurveField(new GUIContent(label.stringValue, tooltip.stringValue), curveValue.animationCurveValue);
-                    break;
-                case InspectorField.FieldTypes.Quaternion:
-                    SerializedProperty quaternionValue = prop.FindPropertyRelative("QuaternionValue");
-                    Vector4 vect4 = new Vector4(quaternionValue.quaternionValue.x, quaternionValue.quaternionValue.y, quaternionValue.quaternionValue.z, quaternionValue.quaternionValue.w);
-                    vect4 = EditorGUILayout.Vector4Field(new GUIContent(label.stringValue, tooltip.stringValue), vect4);
-                    quaternionValue.quaternionValue = new Quaternion(vect4.x, vect4.y, vect4.z, vect4.w);
-                    break;
-                case InspectorField.FieldTypes.AudioClip:
-                    SerializedProperty audioClip = prop.FindPropertyRelative("AudioClipValue");
-                    EditorGUILayout.PropertyField(audioClip, new GUIContent(label.stringValue, tooltip.stringValue), false);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void RemoveEvent(int index)
-        {
-            SerializedProperty events = serializedObject.FindProperty("Events");
-            if (events.arraySize > index)
-            {
-                events.DeleteArrayElementAtIndex(index);
-            }
-        }
-
-        private void SetupEventOptions()
-        {
-            InteractableEvent.EventLists lists = InteractableEvent.GetEventTypes();
-            eventTypes = lists.EventTypes.ToArray();
-            eventOptions = lists.EventNames.ToArray();
         }
 
         private void SetupThemeOptions()

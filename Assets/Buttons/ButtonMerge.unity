@@ -505,7 +505,7 @@ MonoBehaviour:
   - Target: {fileID: 1978552500}
     Themes:
     - {fileID: 11400000, guid: 34927bf1a1259e141a45f1dedff98d7f, type: 2}
-    HadDefaultTheme: 1
+    HadDefaultTheme: 0
   OnClick:
     m_PersistentCalls:
       m_Calls: []

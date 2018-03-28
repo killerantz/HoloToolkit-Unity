@@ -71,6 +71,8 @@ namespace HoloToolkit.Unity
             // add themes
             // handle/display properties from themes
 
+            //!!!!! need to make sure we refresh the shader list when the target changes
+
             serializedObject.Update();
 
             EditorGUILayout.Space();
