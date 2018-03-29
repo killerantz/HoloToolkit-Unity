@@ -16,11 +16,6 @@ namespace HoloToolkit.Unity
 
         }
 
-        public override State GetState()
-        {
-            return base.GetState();
-        }
-
         public override State CompareStates(bool[] states)
         {
             int bit = GetBit(states);

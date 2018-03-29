@@ -30,7 +30,7 @@ namespace HoloToolkit.Unity
             return Bit;
         }
     }
-
+    
     public abstract class StateModel
     {
         protected State currentState;

@@ -120,7 +120,7 @@ namespace HoloToolkit.Unity
             string profileTitle = "Profiles";
             if (!ProfilesSetup && !showProfiles)
             {
-                DrawError("Profiles need to be setup or has errors!");
+                DrawWarning("Profiles (Optional) have not been set up or has errors.");
             }
 
             // profiles section

@@ -16,7 +16,7 @@ namespace HoloToolkit.Unity
         public bool IsValid;
     }
 
-    [CreateAssetMenu(fileName = "Theme", menuName = "Themes/Theme", order = 1)]
+    [CreateAssetMenu(fileName = "Theme", menuName = "Interactable/Theme", order = 1)]
     public class Theme : ScriptableObject
     {
         public string Name;

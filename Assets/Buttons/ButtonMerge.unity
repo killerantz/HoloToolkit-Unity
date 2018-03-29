@@ -505,7 +505,7 @@ MonoBehaviour:
   - Target: {fileID: 1978552500}
     Themes:
     - {fileID: 11400000, guid: 34927bf1a1259e141a45f1dedff98d7f, type: 2}
-    HadDefaultTheme: 0
+    HadDefaultTheme: 1
   OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -605,7 +605,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 726888385}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0678, y: 0, z: 1}
+  m_LocalPosition: {x: 0.0735, y: 0, z: 1}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children:
   - {fileID: 1978552501}
@@ -736,10 +736,29 @@ MonoBehaviour:
     HadDefaultTheme: 1
   OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 726888385}
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  Events: []
+  Events:
+  - Name: 
+    Event:
+      m_PersistentCalls:
+        m_Calls: []
+      m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    ClassName: 
+    Settings: []
 --- !u!1 &1978552500
 GameObject:
   m_ObjectHideFlags: 0
