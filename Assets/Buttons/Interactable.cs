@@ -14,6 +14,7 @@ namespace HoloToolkit.Unity
     {
         public bool Enabled;
         public InteractableStates State;
+        public States States;
         public InteractionSourcePressInfo ButtonPressFilter = InteractionSourcePressInfo.Select;
         public bool IsGlobal = false;
         public int Dimensions = 1;

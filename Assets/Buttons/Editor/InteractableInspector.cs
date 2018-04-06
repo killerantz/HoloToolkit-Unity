@@ -73,6 +73,12 @@ namespace HoloToolkit.Unity
 
             //!!!!! need to make sure we refresh the shader list when the target changes
 
+            //!!!!! finish incorporating States
+            // add the default states by default
+            // let flow into rest of themes and events.
+            // events should targe the state logic they support.
+            // make states a property drawer or section
+
             serializedObject.Update();
 
             EditorGUILayout.Space();
@@ -80,6 +86,9 @@ namespace HoloToolkit.Unity
             //EditorGUILayout.LabelField(new GUIContent("Interactable Settings"));
 
             EditorGUILayout.BeginVertical("Box");
+
+            SerializedProperty states = serializedObject.FindProperty("States");
+            EditorGUILayout.PropertyField(states, new GUIContent("States", "The States this Interactable is based on"));
 
             //standard UI
             SerializedProperty enabled = serializedObject.FindProperty("Enabled");
