@@ -283,7 +283,7 @@ namespace HoloToolkit.Unity
 
                                         SerializedProperty shaderList = item.FindPropertyRelative("ShaderOptions");
                                         SerializedProperty shaderNames = item.FindPropertyRelative("ShaderOptionNames");
-
+                                        
                                         if (shaderNames.arraySize > 0)
                                         {
                                             // show shader property dropdown
@@ -661,12 +661,19 @@ namespace HoloToolkit.Unity
                 List<ThemeProperty> properties = themeBase.ThemeProperties;
 
                 SerializedProperty sProps = settingsItem.FindPropertyRelative("Properties");
-                sProps.ClearArray();
+                // clearing all the properties, we need to copy these if possible!!!!!!!!!!!!
+                //sProps.ClearArray();
+                // stick the copy in the new format into sProps.
+                sProps = CopyProperties(sProps, properties);
 
                 for (int i = 0; i < properties.Count; i++)
                 {
-                    sProps.InsertArrayElementAtIndex(sProps.arraySize);
-                    SerializedProperty item = sProps.GetArrayElementAtIndex(sProps.arraySize - 1);
+                    if (sProps.arraySize <= i)
+                    {
+                        sProps.InsertArrayElementAtIndex(sProps.arraySize);
+                    }
+                    
+                    SerializedProperty item = sProps.GetArrayElementAtIndex(i);
 
                     SerializedProperty name = item.FindPropertyRelative("Name");
                     SerializedProperty type = item.FindPropertyRelative("Type");
@@ -684,8 +691,12 @@ namespace HoloToolkit.Unity
                     //! can I find out if this has been initiated so I only set defaults first time?
                     for (int j = 0; j < valueCount; j++)
                     {
-                        values.InsertArrayElementAtIndex(values.arraySize);
-                        SerializedProperty valueItem = values.GetArrayElementAtIndex(values.arraySize - 1);
+                        if (values.arraySize <= j)
+                        {
+                            values.InsertArrayElementAtIndex(values.arraySize);
+                        }
+
+                        SerializedProperty valueItem = values.GetArrayElementAtIndex(j);
                         SerializedProperty valueName = valueItem.FindPropertyRelative("Name");
                         valueName.stringValue = states[j].Name;
 
@@ -732,6 +743,7 @@ namespace HoloToolkit.Unity
                     shaderList.ClearArray();
                     shaderNames.ClearArray();
 
+                    Debug.Log("CHANGE: " + i + " / " + valid + " / " + shaderPropFilter + " / " + isNew);
                     if (valid && shaderPropFilter.Count > 0)
                     {
                         ShaderProperties[]  shaderProps = GetShaderProperties(gameObject.gameObject.GetComponent<Renderer>(), shaderPropFilter.ToArray());
@@ -908,6 +920,44 @@ namespace HoloToolkit.Unity
                 name.stringValue = data.Name;
                 PropertySettingsList(settings, data.Fields);
             }
+        }
+
+        private SerializedProperty CopyProperties(SerializedProperty oldProperties, List<ThemeProperty> newProperties)
+        {
+            int oldCount = oldProperties.arraySize;
+
+            for (int i = 0; i < newProperties.Count; i++)
+            {
+                for (int j = 0; j < oldCount; j++)
+                {
+                    SerializedProperty item = oldProperties.GetArrayElementAtIndex(j);
+                    SerializedProperty name = item.FindPropertyRelative("Name");
+                    SerializedProperty type = item.FindPropertyRelative("Type");
+                    SerializedProperty values = item.FindPropertyRelative("Values");
+
+                    if (name.stringValue == newProperties[i].Name && type.intValue == (int)newProperties[i].Type)
+                    {
+                        oldProperties.InsertArrayElementAtIndex(oldProperties.arraySize);
+                        SerializedProperty copy = oldProperties.GetArrayElementAtIndex(oldProperties.arraySize - 1);
+
+                        SerializedProperty copyName = copy.FindPropertyRelative("Name");
+                        SerializedProperty copyType = copy.FindPropertyRelative("Type");
+                        SerializedProperty copyValues = copy.FindPropertyRelative("Values");
+                        copyName.stringValue = name.stringValue;
+                        copyType.intValue = type.intValue;
+                        copyValues.objectReferenceValue = values.objectReferenceValue;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = oldCount - 1; i > -1; i--)
+            {
+                oldProperties.DeleteArrayElementAtIndex(i);
+            }
+
+            return oldProperties;
+
         }
 
         private static void PropertySettingsList(SerializedProperty settings, List<InteractableEvent.FieldData> data)

@@ -29,7 +29,7 @@ MonoBehaviour:
         Vector2: {x: 0, y: 0}
         Vector3: {x: 0, y: 0, z: 0}
         Vector4: {x: 0, y: 0, z: 0, w: 0}
-        Color: {r: 0.48161766, g: 0.90344834, b: 0.9632353, a: 1}
+        Color: {r: 0, g: 0, b: 0, a: 0}
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
@@ -44,7 +44,7 @@ MonoBehaviour:
         Vector2: {x: 0, y: 0}
         Vector3: {x: 0, y: 0, z: 0}
         Vector4: {x: 0, y: 0, z: 0, w: 0}
-        Color: {r: 0.8897059, g: 0.9856528, b: 1, a: 1}
+        Color: {r: 0, g: 0, b: 0, a: 0}
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
@@ -59,7 +59,7 @@ MonoBehaviour:
         Vector2: {x: 0, y: 0}
         Vector3: {x: 0, y: 0, z: 0}
         Vector4: {x: 0, y: 0, z: 0, w: 0}
-        Color: {r: 0.9647059, g: 0.7518053, b: 0.48235294, a: 1}
+        Color: {r: 0, g: 0, b: 0, a: 0}
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
@@ -74,7 +74,7 @@ MonoBehaviour:
         Vector2: {x: 0, y: 0}
         Vector3: {x: 0, y: 0, z: 0}
         Vector4: {x: 0, y: 0, z: 0, w: 0}
-        Color: {r: 0.53676474, g: 0.53676474, b: 0.53676474, a: 1}
+        Color: {r: 0, g: 0, b: 0, a: 0}
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
@@ -95,24 +95,8 @@ MonoBehaviour:
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
       PropId: 0
-      ShaderOptions:
-      - Name: _Color
-        Type: 0
-        Range: {x: 1, y: 1}
-      - Name: _SpecColor
-        Type: 0
-        Range: {x: 0.5, y: 0.5}
-      - Name: _RimColor
-        Type: 0
-        Range: {x: 1, y: 1}
-      - Name: _EmissionColor
-        Type: 0
-        Range: {x: 1, y: 1}
-      ShaderOptionNames:
-      - _Color
-      - _SpecColor
-      - _RimColor
-      - _EmissionColor
+      ShaderOptions: []
+      ShaderOptionNames: []
     Easing:
       EaseValues: 1
       Curve:
