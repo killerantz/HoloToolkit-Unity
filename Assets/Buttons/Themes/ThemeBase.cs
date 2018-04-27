@@ -8,7 +8,7 @@ namespace HoloToolkit.Unity
     public enum ThemePropertyValueTypes { Float, Int, Color, ShaderFloat, shaderRange, Vector2, Vector3, Vector4, Quaternion, Texture, Material, AudioClip, Animaiton, GameObject, String, Bool }
 
     [System.Serializable]
-    public struct ThemePropertyValue
+    public class ThemePropertyValue
     {
         public string Name;
         public string String;
@@ -38,7 +38,7 @@ namespace HoloToolkit.Unity
     }
 
     [System.Serializable]
-    public struct ThemeProperty
+    public class ThemeProperty
     {
         public string Name;
         public ThemePropertyValueTypes Type;
@@ -47,6 +47,7 @@ namespace HoloToolkit.Unity
         public int PropId;
         public List<ShaderProperties> ShaderOptions;
         public List<string> ShaderOptionNames;
+        public ThemePropertyValue Default;
 
         public string GetShaderPropId()
         {

@@ -17,7 +17,8 @@ namespace HoloToolkit.Unity
                 {
                     Name = "Scale",
                     Type = ThemePropertyValueTypes.Vector3,
-                    Values = new List<ThemePropertyValue>()
+                    Values = new List<ThemePropertyValue>(),
+                    Default = new ThemePropertyValue() { Vector3 = Vector3.one}
                 });
         }
 

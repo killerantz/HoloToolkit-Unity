@@ -18,7 +18,8 @@ namespace HoloToolkit.Unity
                 {
                     Name = "Color",
                     Type = ThemePropertyValueTypes.Color,
-                    Values = new List<ThemePropertyValue>()
+                    Values = new List<ThemePropertyValue>(),
+                    Default = new ThemePropertyValue() { Color = Color.white}
                 });
         }
 

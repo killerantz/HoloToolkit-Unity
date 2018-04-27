@@ -168,10 +168,11 @@ namespace HoloToolkit.Unity
 
                     EditorGUILayout.BeginHorizontal();
                     DrawLabel(targetName, 12, baseColor);
-                   
+                    
                     if (GUILayout.Button(new GUIContent(minus, "Remove Profile"), smallButton, GUILayout.Width(minusButtonWidth)))
                     {
                         RemoveProfile(i);
+                        continue;
                     }
                     EditorGUILayout.EndHorizontal();
 
@@ -304,6 +305,11 @@ namespace HoloToolkit.Unity
                                             popupStyle.margin.right = Mathf.RoundToInt(Screen.width * 0.25f);
                                             propId.intValue = EditorGUILayout.Popup("Material " + name.stringValue + "Id", propId.intValue, SerializedPropertyToOptions(shaderNames), popupStyle);
                                             idCount++;
+
+                                            // Handle isse where the material color id renders on objects it shouldn't!!!!!!!!!!!!!!
+                                            // theme is save for a game object with a renderer, but when put on a textmesh, rendering prop values show up.
+                                            // when changing the theme type on a TextMesh, everything works, but the rendering prop is removed from the theme on the renderer object.
+                                            // make this passive, only show up when needed.
                                         }
                                     }
                                     EditorGUI.indentLevel = indentOnSectionStart;
@@ -670,16 +676,23 @@ namespace HoloToolkit.Unity
                 List<ThemeProperty> properties = themeBase.ThemeProperties;
 
                 SerializedProperty sProps = settingsItem.FindPropertyRelative("Properties");
-                // clearing all the properties, we need to copy these if possible!!!!!!!!!!!!
-                //sProps.ClearArray();
-                // stick the copy in the new format into sProps.
-                sProps = CopyProperties(sProps, properties);
 
+                if (isNew)
+                {
+                    sProps.ClearArray();
+                }
+                else
+                {
+                    // stick the copy in the new format into sProps.
+                    sProps = CopyProperties(sProps, properties);
+                }
+                
                 for (int i = 0; i < properties.Count; i++)
                 {
                     if (sProps.arraySize <= i)
                     {
                         sProps.InsertArrayElementAtIndex(sProps.arraySize);
+                        isNew = true;
                     }
                     
                     SerializedProperty item = sProps.GetArrayElementAtIndex(i);
@@ -687,10 +700,6 @@ namespace HoloToolkit.Unity
                     SerializedProperty name = item.FindPropertyRelative("Name");
                     SerializedProperty type = item.FindPropertyRelative("Type");
                     SerializedProperty values = item.FindPropertyRelative("Values");
-                    if (isNew)
-                    {
-                        values.ClearArray();
-                    }
                     
                     name.stringValue = properties[i].Name;
                     type.intValue = (int)properties[i].Type;
@@ -703,16 +712,17 @@ namespace HoloToolkit.Unity
                         if (values.arraySize <= j)
                         {
                             values.InsertArrayElementAtIndex(values.arraySize);
+                            isNew = true;
                         }
 
                         SerializedProperty valueItem = values.GetArrayElementAtIndex(j);
                         SerializedProperty valueName = valueItem.FindPropertyRelative("Name");
                         valueName.stringValue = states[j].Name;
 
-                        if (isNew)
-                        { 
-                            SerializedProperty color = valueItem.FindPropertyRelative("Color");
-                            color.colorValue = Color.white;
+                        if (isNew && properties[i].Default != null)
+                        {
+                            // how do we setup the default values for scale
+                            SerializeThemeValues(properties[i].Default, valueItem, type.intValue);
                         }
                     }
                     
@@ -752,7 +762,6 @@ namespace HoloToolkit.Unity
                     shaderList.ClearArray();
                     shaderNames.ClearArray();
 
-                    Debug.Log("CHANGE: " + i + " / " + valid + " / " + shaderPropFilter + " / " + isNew);
                     if (valid && shaderPropFilter.Count > 0)
                     {
                         ShaderProperties[]  shaderProps = GetShaderProperties(gameObject.gameObject.GetComponent<Renderer>(), shaderPropFilter.ToArray());
@@ -784,6 +793,180 @@ namespace HoloToolkit.Unity
 
             return themeObj;
             
+        }
+
+        private SerializedProperty CopyThemeValues(SerializedProperty copyFrom, SerializedProperty copyTo, int type)
+        {
+            SerializedProperty floatFrom;
+            SerializedProperty floatTo;
+            SerializedProperty vector2From;
+            SerializedProperty vector2To;
+
+            switch ((ThemePropertyValueTypes)type)
+            {
+                case ThemePropertyValueTypes.Float:
+                    floatFrom = copyFrom.FindPropertyRelative("Float");
+                    floatTo = copyTo.FindPropertyRelative("Float");
+                    floatTo.floatValue = floatFrom.floatValue;
+                    break;
+                case ThemePropertyValueTypes.Int:
+                    SerializedProperty intFrom = copyFrom.FindPropertyRelative("Int");
+                    SerializedProperty intTo = copyTo.FindPropertyRelative("Int");
+                    intTo.intValue = intFrom.intValue;
+                    break;
+                case ThemePropertyValueTypes.Color:
+                    SerializedProperty colorFrom = copyFrom.FindPropertyRelative("Color");
+                    SerializedProperty colorTo = copyTo.FindPropertyRelative("Color");
+                    colorTo.colorValue = colorFrom.colorValue;
+                    break;
+                case ThemePropertyValueTypes.ShaderFloat:
+                    floatFrom = copyFrom.FindPropertyRelative("Float");
+                    floatTo = copyTo.FindPropertyRelative("Float");
+                    floatTo.floatValue = floatFrom.floatValue;
+                    break;
+                case ThemePropertyValueTypes.shaderRange:
+                    vector2From = copyFrom.FindPropertyRelative("Vector2");
+                    vector2To = copyTo.FindPropertyRelative("Vector2");
+                    vector2To.vector2Value = vector2From.vector2Value;
+                    break;
+                case ThemePropertyValueTypes.Vector2:
+                    vector2From = copyFrom.FindPropertyRelative("Vector2");
+                    vector2To = copyTo.FindPropertyRelative("Vector2");
+                    vector2To.vector2Value = vector2From.vector2Value;
+                    break;
+                case ThemePropertyValueTypes.Vector3:
+                    SerializedProperty vector3From = copyFrom.FindPropertyRelative("Vector3");
+                    SerializedProperty vector3To = copyTo.FindPropertyRelative("Vector3");
+                    vector3To.vector3Value = vector3From.vector3Value;
+                    break;
+                case ThemePropertyValueTypes.Vector4:
+                    SerializedProperty vector4From = copyFrom.FindPropertyRelative("Vector4");
+                    SerializedProperty vector4To = copyTo.FindPropertyRelative("Vector4");
+                    vector4To.vector4Value = vector4From.vector4Value;
+                    break;
+                case ThemePropertyValueTypes.Quaternion:
+                    SerializedProperty quaternionFrom = copyFrom.FindPropertyRelative("Quaternion");
+                    SerializedProperty quaternionTo = copyTo.FindPropertyRelative("Quaternion");
+                    quaternionTo.quaternionValue = quaternionFrom.quaternionValue;
+                    break;
+                case ThemePropertyValueTypes.Texture:
+                    SerializedProperty textureFrom = copyFrom.FindPropertyRelative("Texture");
+                    SerializedProperty textureTo = copyTo.FindPropertyRelative("Texture");
+                    textureTo.objectReferenceValue = textureFrom.objectReferenceValue;
+                    break;
+                case ThemePropertyValueTypes.Material:
+                    SerializedProperty materialFrom = copyFrom.FindPropertyRelative("Material");
+                    SerializedProperty materialTo = copyTo.FindPropertyRelative("Material");
+                    materialTo.objectReferenceValue = materialFrom.objectReferenceValue;
+                    break;
+                case ThemePropertyValueTypes.AudioClip:
+                    SerializedProperty audioClipFrom = copyFrom.FindPropertyRelative("AudioClip");
+                    SerializedProperty audioClipTo = copyTo.FindPropertyRelative("AudioClip");
+                    audioClipTo.objectReferenceValue = audioClipFrom.objectReferenceValue;
+                    break;
+                case ThemePropertyValueTypes.Animaiton:
+                    SerializedProperty animationFrom = copyFrom.FindPropertyRelative("Animation");
+                    SerializedProperty animationTo = copyTo.FindPropertyRelative("Animation");
+                    animationTo.objectReferenceValue = animationFrom.objectReferenceValue;
+                    break;
+                case ThemePropertyValueTypes.GameObject:
+                    SerializedProperty gameObjectFrom = copyFrom.FindPropertyRelative("GameObject");
+                    SerializedProperty gameObjectTo = copyTo.FindPropertyRelative("GameObject");
+                    gameObjectTo.objectReferenceValue = gameObjectFrom.objectReferenceValue;
+                    break;
+                case ThemePropertyValueTypes.String:
+                    SerializedProperty stringFrom = copyFrom.FindPropertyRelative("String");
+                    SerializedProperty stringTo = copyTo.FindPropertyRelative("String");
+                    stringTo.stringValue = stringFrom.stringValue;
+                    break;
+                case ThemePropertyValueTypes.Bool:
+                    SerializedProperty boolFrom = copyFrom.FindPropertyRelative("Bool");
+                    SerializedProperty boolTo = copyTo.FindPropertyRelative("Bool");
+                    boolTo.boolValue = boolFrom.boolValue;
+                    break;
+                default:
+                    break;
+            }
+
+            return copyTo;
+        }
+
+        private SerializedProperty SerializeThemeValues(ThemePropertyValue copyFrom, SerializedProperty copyTo, int type)
+        {
+            SerializedProperty floatTo;
+            SerializedProperty vector2To;
+
+            switch ((ThemePropertyValueTypes)type)
+            {
+                case ThemePropertyValueTypes.Float:
+                    floatTo = copyTo.FindPropertyRelative("Float");
+                    floatTo.floatValue = copyFrom.Float;
+                    break;
+                case ThemePropertyValueTypes.Int:
+                    SerializedProperty intTo = copyTo.FindPropertyRelative("Int");
+                    intTo.intValue = copyFrom.Int;
+                    break;
+                case ThemePropertyValueTypes.Color:
+                    SerializedProperty colorTo = copyTo.FindPropertyRelative("Color");
+                    colorTo.colorValue = copyFrom.Color;
+                    break;
+                case ThemePropertyValueTypes.ShaderFloat:
+                    floatTo = copyTo.FindPropertyRelative("Float");
+                    floatTo.floatValue = copyFrom.Float;
+                    break;
+                case ThemePropertyValueTypes.shaderRange:
+                    vector2To = copyTo.FindPropertyRelative("Vector2");
+                    vector2To.vector2Value = copyFrom.Vector2;
+                    break;
+                case ThemePropertyValueTypes.Vector2:
+                    vector2To = copyTo.FindPropertyRelative("Vector2");
+                    vector2To.vector2Value = copyFrom.Vector2;
+                    break;
+                case ThemePropertyValueTypes.Vector3:
+                    SerializedProperty vector3To = copyTo.FindPropertyRelative("Vector3");
+                    vector3To.vector3Value = copyFrom.Vector3;
+                    break;
+                case ThemePropertyValueTypes.Vector4:
+                    SerializedProperty vector4To = copyTo.FindPropertyRelative("Vector4");
+                    vector4To.vector4Value = copyFrom.Vector4;
+                    break;
+                case ThemePropertyValueTypes.Quaternion:
+                    SerializedProperty quaternionTo = copyTo.FindPropertyRelative("Quaternion");
+                    quaternionTo.quaternionValue = copyFrom.Quaternion;
+                    break;
+                case ThemePropertyValueTypes.Texture:
+                    SerializedProperty textureTo = copyTo.FindPropertyRelative("Texture");
+                    textureTo.objectReferenceValue = copyFrom.Texture;
+                    break;
+                case ThemePropertyValueTypes.Material:
+                    SerializedProperty materialTo = copyTo.FindPropertyRelative("Material");
+                    materialTo.objectReferenceValue = copyFrom.Material;
+                    break;
+                case ThemePropertyValueTypes.AudioClip:
+                    SerializedProperty audioClipTo = copyTo.FindPropertyRelative("AudioClip");
+                    audioClipTo.objectReferenceValue = copyFrom.AudioClip;
+                    break;
+                case ThemePropertyValueTypes.Animaiton:
+                    SerializedProperty animationTo = copyTo.FindPropertyRelative("Animation");
+                    animationTo.objectReferenceValue = copyFrom.Animation;
+                    break;
+                case ThemePropertyValueTypes.GameObject:
+                    SerializedProperty gameObjectTo = copyTo.FindPropertyRelative("GameObject");
+                    gameObjectTo.objectReferenceValue = copyFrom.GameObject;
+                    break;
+                case ThemePropertyValueTypes.String:
+                    SerializedProperty stringTo = copyTo.FindPropertyRelative("String");
+                    stringTo.stringValue = copyFrom.String;
+                    break;
+                case ThemePropertyValueTypes.Bool:
+                    SerializedProperty boolTo = copyTo.FindPropertyRelative("Bool");
+                    boolTo.boolValue = copyFrom.Bool;
+                    break;
+                default:
+                    break;
+            }
+
+            return copyTo;
         }
 
         private static void RenderThemeSettings(SerializedProperty settings, State[] states, int margin)
@@ -879,7 +1062,7 @@ namespace HoloToolkit.Unity
                                 EditorGUILayout.PropertyField(animation, new GUIContent(name.stringValue, ""), false);
                                 break;
                             case ThemePropertyValueTypes.GameObject:
-                                SerializedProperty gameObjectValue = item.FindPropertyRelative("Int");
+                                SerializedProperty gameObjectValue = item.FindPropertyRelative("GameObject");
                                 EditorGUILayout.PropertyField(gameObjectValue, new GUIContent(name.stringValue, ""), false);
                                 break;
                             case ThemePropertyValueTypes.String:
@@ -937,25 +1120,38 @@ namespace HoloToolkit.Unity
 
             for (int i = 0; i < newProperties.Count; i++)
             {
+                oldProperties.InsertArrayElementAtIndex(oldProperties.arraySize);
+                SerializedProperty copy = oldProperties.GetArrayElementAtIndex(oldProperties.arraySize - 1);
+
+                SerializedProperty copyName = copy.FindPropertyRelative("Name");
+                SerializedProperty copyType = copy.FindPropertyRelative("Type");
+                SerializedProperty copyValues = copy.FindPropertyRelative("Values");
+                copyName.stringValue = newProperties[i].Name;
+                copyType.intValue = (int)newProperties[i].Type;
+
+                bool copied = false;
                 for (int j = 0; j < oldCount; j++)
                 {
                     SerializedProperty item = oldProperties.GetArrayElementAtIndex(j);
                     SerializedProperty name = item.FindPropertyRelative("Name");
                     SerializedProperty type = item.FindPropertyRelative("Type");
                     SerializedProperty values = item.FindPropertyRelative("Values");
-
+                    
                     if (name.stringValue == newProperties[i].Name && type.intValue == (int)newProperties[i].Type)
                     {
-                        oldProperties.InsertArrayElementAtIndex(oldProperties.arraySize);
-                        SerializedProperty copy = oldProperties.GetArrayElementAtIndex(oldProperties.arraySize - 1);
-
-                        SerializedProperty copyName = copy.FindPropertyRelative("Name");
-                        SerializedProperty copyType = copy.FindPropertyRelative("Type");
-                        SerializedProperty copyValues = copy.FindPropertyRelative("Values");
-                        copyName.stringValue = name.stringValue;
-                        copyType.intValue = type.intValue;
-                        copyValues.objectReferenceValue = values.objectReferenceValue;
+                        for (int h = 0; h < copyValues.arraySize; h++)
+                        {
+                            SerializedProperty copyItem = copyValues.GetArrayElementAtIndex(h);
+                            SerializedProperty valueItem = values.GetArrayElementAtIndex(h);
+                            copyItem = CopyThemeValues(valueItem, copyItem, copyType.intValue);
+                        }
+                        copied = true;
                         break;
+                    }
+                    
+                    if (!copied && j >= oldCount - 1)
+                    {
+                        copyValues.ClearArray();
                     }
                 }
             }

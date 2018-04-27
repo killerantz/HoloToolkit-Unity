@@ -18,9 +18,10 @@ namespace HoloToolkit.Unity
             ThemeProperties.Add(
                 new ThemeProperty()
                 {
-                    Name = "Offset",
+                    Name = "Shader",
                     Type = ThemePropertyValueTypes.ShaderFloat,
-                    Values = new List<ThemePropertyValue>()
+                    Values = new List<ThemePropertyValue>(),
+                    Default = new ThemePropertyValue() { Float = 0}
                 });
         }
 

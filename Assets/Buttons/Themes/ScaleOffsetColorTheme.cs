@@ -27,21 +27,24 @@ namespace HoloToolkit.Unity
                 {
                     Name = "Scale",
                     Type = ThemePropertyValueTypes.Vector3,
-                    Values = new List<ThemePropertyValue>()
+                    Values = new List<ThemePropertyValue>(),
+                    Default = new ThemePropertyValue() { Vector3 = Vector3.one }
                 });
             ThemeProperties.Add(
                 new ThemeProperty()
                 {
                     Name = "Offset",
                     Type = ThemePropertyValueTypes.Vector3,
-                    Values = new List<ThemePropertyValue>()
+                    Values = new List<ThemePropertyValue>(),
+                    Default = new ThemePropertyValue() { Vector3 = Vector3.zero }
                 });
             ThemeProperties.Add(
                 new ThemeProperty()
                 {
                     Name = "Color",
                     Type = ThemePropertyValueTypes.Color,
-                    Values = new List<ThemePropertyValue>()
+                    Values = new List<ThemePropertyValue>(),
+                    Default = new ThemePropertyValue() { Color = Color.white }
                 });
         }
 
