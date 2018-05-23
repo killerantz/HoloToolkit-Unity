@@ -26,76 +26,115 @@ namespace HoloToolkit.Unity
         protected delegate void ListButtonEvent(int index);
         protected delegate void MultiListButtonEvent(int[] arr);
 
-        protected virtual void RemoveButton(GUIContent label, int index, ListButtonEvent callback)
+        protected virtual bool RemoveButton(GUIContent label, int index, ListButtonEvent callback)
         {
             // delete button
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-
-            GUIContent buttonLabel = new GUIContent(label);
-            float buttonWidth = GUI.skin.button.CalcSize(buttonLabel).x;
+            
+            float buttonWidth = GUI.skin.button.CalcSize(label).x;
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button(buttonLabel, buttonStyle, GUILayout.Width(buttonWidth)))
+            bool triggered = false;
+            if (GUILayout.Button(label, buttonStyle, GUILayout.Width(buttonWidth)))
             {
                 callback(index);
+                triggered = true;
             }
 
             EditorGUILayout.EndHorizontal();
+            return triggered;
         }
 
-        protected virtual void RemoveButton(GUIContent label, int[] arr, MultiListButtonEvent callback)
+        protected virtual bool RemoveButton(GUIContent label, int[] arr, MultiListButtonEvent callback)
         {
             // delete button
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-
-            GUIContent buttonLabel = new GUIContent(label);
-            float buttonWidth = GUI.skin.button.CalcSize(buttonLabel).x;
+            
+            float buttonWidth = GUI.skin.button.CalcSize(label).x;
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button(buttonLabel, buttonStyle, GUILayout.Width(buttonWidth)))
+            bool triggered = false;
+            if (GUILayout.Button(label, buttonStyle, GUILayout.Width(buttonWidth)))
             {
                 callback(arr);
+                triggered = true;
             }
 
             EditorGUILayout.EndHorizontal();
+            return triggered;
         }
 
-        protected virtual void AddButton(GUIContent label, float padding, int index, ListButtonEvent callback)
+        protected virtual bool AddButton(GUIContent label, float padding, int index, ListButtonEvent callback)
         {
             GUIStyle addStyle = new GUIStyle(GUI.skin.button);
             addStyle.fixedHeight = 25;
-            GUIContent addLabel = new GUIContent(label);
-            float addButtonWidth = GUI.skin.button.CalcSize(addLabel).x * padding;
+            float addButtonWidth = GUI.skin.button.CalcSize(label).x * padding;
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(addLabel, addStyle, GUILayout.Width(addButtonWidth)))
+
+            bool triggered = false;
+            if (GUILayout.Button(label, addStyle, GUILayout.Width(addButtonWidth)))
             {
                 callback(index);
+                triggered = true;
             }
 
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
+            return triggered;
         }
 
-        protected virtual void AddButton(GUIContent label, float padding, int[] arr, MultiListButtonEvent callback)
+        protected virtual bool AddButton(GUIContent label, float padding, int[] arr, MultiListButtonEvent callback)
         {
             GUIStyle addStyle = new GUIStyle(GUI.skin.button);
             addStyle.fixedHeight = 25;
-            GUIContent addLabel = new GUIContent(label);
-            float addButtonWidth = GUI.skin.button.CalcSize(addLabel).x * padding;
+            float addButtonWidth = GUI.skin.button.CalcSize(label).x * padding;
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(addLabel, addStyle, GUILayout.Width(addButtonWidth)))
+
+            bool triggered = false;
+            if (GUILayout.Button(label, addStyle, GUILayout.Width(addButtonWidth)))
             {
                 callback(arr);
+                triggered = true;
             }
 
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
+            return triggered;
+        }
+
+        protected virtual bool SmallButton(GUIContent label, int index, ListButtonEvent callback)
+        {
+
+            GUIStyle smallButton = new GUIStyle(EditorStyles.miniButton);
+            float smallButtonWidth = GUI.skin.button.CalcSize(new GUIContent(label)).x;
+
+            bool triggered = false;
+            if (GUILayout.Button(label, smallButton, GUILayout.Width(smallButtonWidth)))
+            {
+                callback(index);
+                triggered = true;
+            }
+            return triggered;
+        }
+
+        protected virtual bool SmallButton(GUIContent label, int[] arr, MultiListButtonEvent callback)
+        {
+            GUIStyle smallButton = new GUIStyle(EditorStyles.miniButton);
+            float smallButtonWidth = GUI.skin.button.CalcSize(label).x;
+
+            bool triggered = false;
+            if (GUILayout.Button(label, smallButton, GUILayout.Width(smallButtonWidth)))
+            {
+                callback(arr);
+                triggered = true;
+            }
+            return triggered;
         }
 
         public static void DrawTitle(string title)

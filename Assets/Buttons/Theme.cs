@@ -12,6 +12,7 @@ namespace HoloToolkit.Unity
         public Type Type;
         public ThemeBase Theme;
         public List<ThemeProperty> Properties;
+        public List<ThemeProperty> History;
         public EaseSettings Easing;
         public bool IsValid;
     }
@@ -21,5 +22,6 @@ namespace HoloToolkit.Unity
     {
         public string Name;
         public List<ThemePropertySettings> Settings;
+        public List<ThemePropertyValue> CustomSettings;
     }
 }

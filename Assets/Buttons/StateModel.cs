@@ -45,7 +45,7 @@ namespace HoloToolkit.Unity
             currentState = state;
         }
         
-        public virtual State GetState()
+        public virtual State CurrentState()
         {
             return currentState;
         }

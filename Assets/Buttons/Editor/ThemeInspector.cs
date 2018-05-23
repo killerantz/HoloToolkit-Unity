@@ -8,21 +8,12 @@ using UnityEngine.UI;
 namespace HoloToolkit.Unity
 {
     [CustomEditor(typeof(Theme))]
-    public class ThemeInspector : InspectorBase
+    public class ThemeInspector : InteractableInspector
     {
-        private Theme instance;
         private SerializedProperty settings;
-        private List<InteractableInspector.ListSettings> listSettings;
 
-        private Type[] themeTypes;
-        private string[] themeOptions;
-
-        private static bool ProfilesSetup = false;
-
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            instance = (Theme)target;
-
             listSettings = new List<InteractableInspector.ListSettings>();
 
             settings = serializedObject.FindProperty("Settings");
@@ -35,25 +26,26 @@ namespace HoloToolkit.Unity
         public override void OnInspectorGUI()
         {
 
-            //!!!!! need access to a game object to get shader info
-            //!!!!! need access to states to get state info
-            //!!!!! need to make sure we refresh the shader list when the target changes
+            // TODO: !!!!! need access to a game object to get shader info
+            // TODO: !!!!! need access to states to get state info
+            // TODO: !!!!! need to make sure we refresh the shader list when the target changes
+            // TODO: !!!!! neet to get shader props, use default if one has not been set.
 
             //base.OnInspectorGUI();
             serializedObject.Update();
-
-            string minus = "\u2212";
-            GUIStyle smallButton = new GUIStyle(EditorStyles.miniButton);
-            float minusButtonWidth = GUI.skin.button.CalcSize(new GUIContent(minus)).x;
 
             if (settings.arraySize < 1)
             {
                 AddThemeProperty(new int[] { 0 });
             }
 
+            RenderThemeSettings(settings, serializedObject, themeOptions, null, new int[] { 0, 0, 0 });
+
+            /*
             for (int n = 0; n < settings.arraySize; n++)
             {
                 SerializedProperty settingsItem = settings.GetArrayElementAtIndex(n);
+                
                 SerializedProperty className = settingsItem.FindPropertyRelative("Name");
 
                 EditorGUI.indentLevel = indentOnSectionStart;
@@ -68,10 +60,8 @@ namespace HoloToolkit.Unity
 
                 if (n > 0)
                 {
-                    if (GUILayout.Button(new GUIContent(minus, "Remove Theme Property"), smallButton, GUILayout.Width(minusButtonWidth)))
-                    {
-                        RemoveThemeProperty(new int[] { n });
-                    }
+                    SmallButton(new GUIContent("\u2212", "Remove Theme Property"), new int[] { n }, RemoveThemeProperty);
+                    
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -133,20 +123,32 @@ namespace HoloToolkit.Unity
                 }
                 EditorGUILayout.EndVertical();
             }
+            */
 
             RemoveButton(new GUIContent("+", "Add Theme Property"), new int[] { 0 }, AddThemeProperty);
             // get list of all the properties from the themes
 
-            RenderThemeSettings(settings, GetStates(), 30);
+            RenderThemeStates(settings, GetStates(), 30);
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private State[] GetStates()
+        protected override void RemoveThemeProperty(int[] arr)
         {
+            int index = arr[0];
+            settings.DeleteArrayElementAtIndex(index);
+        }
+
+        protected override State[] GetStates()
+        {
+            // TODO: make sure we are getting current states that were saved and not overwrite states
             InteractableStates states = new InteractableStates(InteractableStates.Default);
             return states.GetStates();
         }
+
+
+        /*
+        
 
         private void AdjustListSettings(int count)
         {
@@ -361,7 +363,7 @@ namespace HoloToolkit.Unity
 
         }
 
-        private static void RenderThemeSettings(SerializedProperty settings, State[] states, int margin)
+        private static void RenderStateSettings(SerializedProperty settings, State[] states, int margin)
         {
 
             GUIStyle box = new GUIStyle(GUI.skin.box);
@@ -602,6 +604,6 @@ namespace HoloToolkit.Unity
             }
 
             return false;
-        }
+        }*/
     }
 }

@@ -138,6 +138,7 @@ namespace HoloToolkit.Unity
         public Type[] Types;
         public string Name = "Base Theme";
         public List<ThemeProperty> ThemeProperties = new List<ThemeProperty>();
+        public List<ThemePropertyValue> CustomSettings = new List<ThemePropertyValue>();
         public GameObject Host;
         public EaseSettings Ease;
         public bool Loaded;

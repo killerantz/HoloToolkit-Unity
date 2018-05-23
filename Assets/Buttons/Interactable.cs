@@ -13,7 +13,7 @@ namespace HoloToolkit.Unity
     public class Interactable : MonoBehaviour, IInputClickHandler, IFocusable, IInputHandler
     {
         public bool Enabled;
-        public InteractableStates State;
+        //public InteractableStates State;
         public States States;
         public InteractionSourcePressInfo ButtonPressFilter = InteractionSourcePressInfo.Select;
         public bool IsGlobal = false;
@@ -34,21 +34,23 @@ namespace HoloToolkit.Unity
 
         // these should get simplified and moved
         // create a ScriptableObject for managing states!!!!
-        public int GetStateCount()
-        {
-            InteractableStates states = new InteractableStates(InteractableStates.Default);
-            return states.GetStates().Length;
-        }
 
         public State[] GetStates()
         {
-            InteractableStates states = new InteractableStates(InteractableStates.Default);
-            return states.GetStates();
+            if (States != null)
+            {
+                return States.GetStates();
+            }
+
+            //InteractableStates states = new InteractableStates(InteractableStates.Default);
+            //return states.GetStates();
+
+            return new State[0];
         }
 
         protected virtual void Awake()
         {
-            State = new InteractableStates(InteractableStates.Default);
+            //State = new InteractableStates(InteractableStates.Default);
             SetupEvents();
             SetupThemes();
         }
@@ -130,9 +132,12 @@ namespace HoloToolkit.Unity
 
         public virtual void OnInputClicked(InputClickedEventData eventData)
         {
-            if (State.GetState() != InteractableStates.Disabled && eventData.PressType == ButtonPressFilter)
+            if (States != null)
             {
-                OnClick.Invoke();
+                if (States.CurrentState() != InteractableStates.Disabled && eventData.PressType == ButtonPressFilter)
+                {
+                    OnClick.Invoke();
+                }
             }
         }
 
@@ -148,7 +153,7 @@ namespace HoloToolkit.Unity
 
         protected virtual void UpdateState()
         {
-            State.CompareStates(new bool[] { HasFocus, HasPress, IsDisabled });
+            States.CompareStates(new bool[] { HasFocus, HasPress, IsDisabled });
         }
 
         protected virtual void Update()
@@ -157,7 +162,7 @@ namespace HoloToolkit.Unity
             {
                 if (Events[i].Receiver != null)
                 {
-                    Events[i].Receiver.OnUpdate(State.GetState());
+                    Events[i].Receiver.OnUpdate(States.CurrentState());
                     ReceiverBase reciever = Events[i].Receiver;
                 }
             }
@@ -166,16 +171,16 @@ namespace HoloToolkit.Unity
             {
                 if (runningThemesList[i].Loaded)
                 {
-                    runningThemesList[i].OnUpdate(State.GetState().Index);
+                    runningThemesList[i].OnUpdate(States.CurrentState().Index);
                 }
             }
 
-            if (lastState != State.GetState())
+            if (lastState != States.CurrentState())
             {
 
             }
 
-            lastState = State.GetState();
+            lastState = States.CurrentState();
         }
 
     }

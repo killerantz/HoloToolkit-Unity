@@ -496,6 +496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 0
+  States: {fileID: 0}
   ButtonPressFilter: 1
   IsGlobal: 0
   Dimensions: 1
@@ -720,6 +721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 0
+  States: {fileID: 11400000, guid: 5eac1712038236e4b8ffdb3893804fe1, type: 2}
   ButtonPressFilter: 1
   IsGlobal: 0
   Dimensions: 1

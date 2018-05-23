@@ -32,6 +32,15 @@ namespace HoloToolkit.Unity
             return StateList.ToArray();
         }
 
+        public State CurrentState()
+        {
+            if (StateLogic == null)
+            {
+                StateLogic = (StateModel)Activator.CreateInstance(StateType, StateList[DefaultIndex]);
+            }
+            return StateLogic.CurrentState();
+        }
+
         public void SetupStateOptions()
         {
             List<Type> stateTypes = new List<Type>();

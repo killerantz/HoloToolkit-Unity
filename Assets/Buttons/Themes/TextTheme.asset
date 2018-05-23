@@ -113,6 +113,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      Enabled: 1
     Easing:
       EaseValues: 1
       Curve:
