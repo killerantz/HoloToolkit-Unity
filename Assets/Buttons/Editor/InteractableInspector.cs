@@ -74,8 +74,7 @@ namespace HoloToolkit.Unity
             // TODO: !!!!! finish incorporating States
             // TODO: add the default states by default
             // TODO: let flow into rest of themes and events.
-            // TODO: events should targe the state logic they support.
-            // TODO: make states a property drawer or section
+            // TODO: events should target the state logic they support.
 
             serializedObject.Update();
 
@@ -673,13 +672,16 @@ namespace HoloToolkit.Unity
 
                     SerializedProperty shaderList = item.FindPropertyRelative("ShaderOptions");
                     SerializedProperty shaderNames = item.FindPropertyRelative("ShaderOptionNames");
+                    SerializedProperty shaderName = item.FindPropertyRelative("ShaderName");
 
                     shaderList.ClearArray();
                     shaderNames.ClearArray();
 
                     if (valid && shaderPropFilter.Count > 0)
                     {
-                        ShaderProperties[]  shaderProps = GetShaderProperties(renderHost.gameObject.GetComponent<Renderer>(), shaderPropFilter.ToArray());
+                        ShaderInfo info = GetShaderProperties(renderHost.gameObject.GetComponent<Renderer>(), shaderPropFilter.ToArray());
+                        ShaderProperties[] shaderProps = info.ShaderOptions;
+                        shaderName.stringValue = info.Name;
                         for (int n = 0; n < shaderProps.Length; n++)
                         {
                             shaderList.InsertArrayElementAtIndex(shaderList.arraySize);
@@ -1048,7 +1050,10 @@ namespace HoloToolkit.Unity
 
                     SerializedProperty shaderList = item.FindPropertyRelative("ShaderOptions");
                     SerializedProperty shaderNames = item.FindPropertyRelative("ShaderOptionNames");
+                    SerializedProperty shaderName = item.FindPropertyRelative("ShaderName");
+                    SerializedProperty propType = item.FindPropertyRelative("Type");
 
+                    bool hasTextComp = false;
                     if (shaderNames.arraySize > 0)
                     {
                         // show shader property dropdown
@@ -1056,10 +1061,81 @@ namespace HoloToolkit.Unity
                         {
                             GUILayout.Space(5);
                         }
-                        GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
-                        popupStyle.margin.right = Mathf.RoundToInt(Screen.width * 0.25f);
-                        propId.intValue = EditorGUILayout.Popup("Material " + name.stringValue + "Id", propId.intValue, SerializedPropertyToOptions(shaderNames), popupStyle);
-                        idCount++;
+
+                        string[] shaderOptionNames = SerializedPropertyToOptions(shaderNames);
+                        string propName = shaderOptionNames[propId.intValue];
+                        bool hasShaderProperty = true;
+                        
+                        if (gameObject == null)
+                        {
+                            EditorGUILayout.LabelField(new GUIContent("Shader: " + shaderName.stringValue ));
+                        }
+                        else
+                        {
+                            GameObject renderHost = gameObject.objectReferenceValue as GameObject;
+                            if (renderHost != null)
+                            {
+                                Renderer renderer = renderHost.GetComponent<Renderer>();
+                                TextMesh mesh = renderHost.GetComponent<TextMesh>();
+                                Text text = renderHost.GetComponent<Text>();
+                                hasTextComp = text != null || mesh != null;
+                                if(renderer != null && !hasTextComp)
+                                {
+                                    ThemePropertyValueTypes type = (ThemePropertyValueTypes)propType.intValue;
+                                    ShaderPropertyType[] filter = new ShaderPropertyType[0];
+                                    switch (type)
+                                    {
+                                        case ThemePropertyValueTypes.Color:
+                                            filter = new ShaderPropertyType[] { ShaderPropertyType.Color };
+                                            break;
+                                        case ThemePropertyValueTypes.ShaderFloat:
+                                            filter = new ShaderPropertyType[] { ShaderPropertyType.Float };
+                                            break;
+                                        case ThemePropertyValueTypes.shaderRange:
+                                            filter = new ShaderPropertyType[] { ShaderPropertyType.Float };
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    ShaderInfo info = GetShaderProperties(renderer, filter);
+
+                                    if (info.Name != shaderName.stringValue)
+                                    {
+                                        hasShaderProperty = false;
+                                        
+                                        for (int i = 0; i < info.ShaderOptions.Length; i++)
+                                        {
+                                            if (info.ShaderOptions[i].Name == propName)
+                                            {
+                                                hasShaderProperty = true;
+                                                break;
+                                            }
+                                        }
+                                        
+                                    }
+                                    
+                                }
+                            }
+                            
+                        }
+
+                        if (!hasTextComp)
+                        {
+                            GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
+                            popupStyle.margin.right = Mathf.RoundToInt(Screen.width * 0.25f);
+                            propId.intValue = EditorGUILayout.Popup("Material " + name.stringValue + "Id", propId.intValue, shaderOptionNames, popupStyle);
+                            idCount++;
+
+                            if (!hasShaderProperty)
+                            {
+                                DrawError(propName + " is not available on the currently assigned Material.");
+                            }
+                        }
+                        else
+                        {
+                            EditorGUILayout.LabelField(new GUIContent("Text Property: " + (ThemePropertyValueTypes)propId.intValue));
+                        }
 
                         // Handle isse where the material color id renders on objects it shouldn't!!!!!!!!!!!!!!
                         // theme is save for a game object with a renderer, but when put on a textmesh, rendering prop values show up.
@@ -1067,6 +1143,7 @@ namespace HoloToolkit.Unity
                         // make this passive, only show up when needed.
                     }
                 }
+
                 EditorGUI.indentLevel = indentOnSectionStart;
                 GUILayout.Space(5);
                 DrawDivider();
@@ -1125,6 +1202,7 @@ namespace HoloToolkit.Unity
                         SerializedProperty propId = propertyItem.FindPropertyRelative("PropId");
                         SerializedProperty options = propertyItem.FindPropertyRelative("ShaderOptions");
                         SerializedProperty names = propertyItem.FindPropertyRelative("ShaderOptionNames");
+                        SerializedProperty shaderName = propertyItem.FindPropertyRelative("ShaderName");
 
                         if (n >= values.arraySize)
                         {
@@ -1541,12 +1619,14 @@ namespace HoloToolkit.Unity
             return 0;
         }
 
-        public static ShaderProperties[] GetShaderProperties(Renderer renderer, ShaderPropertyType[] filter)
+        public static ShaderInfo GetShaderProperties(Renderer renderer, ShaderPropertyType[] filter)
         {
+            ShaderInfo info = new ShaderInfo();
             List<ShaderProperties> properties = new List<ShaderProperties>();
             if (renderer != null)
             {
                 Material material = ThemeBase.GetValidMaterial(renderer);
+                info.Name = material.shader.name;
 
                 if (material != null)
                 {
@@ -1566,7 +1646,8 @@ namespace HoloToolkit.Unity
                     }
                 }
             }
-            return properties.ToArray();
+            info.ShaderOptions = properties.ToArray();
+            return info;
         }
 
         public static ShaderPropertyType ShaderUtilConvert(ShaderUtil.ShaderPropertyType type)

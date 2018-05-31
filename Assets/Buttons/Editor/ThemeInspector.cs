@@ -25,7 +25,6 @@ namespace HoloToolkit.Unity
 
         public override void OnInspectorGUI()
         {
-
             // TODO: !!!!! need access to a game object to get shader info
             // TODO: !!!!! need access to states to get state info
             // TODO: !!!!! need to make sure we refresh the shader list when the target changes
@@ -40,91 +39,7 @@ namespace HoloToolkit.Unity
             }
 
             RenderThemeSettings(settings, serializedObject, themeOptions, null, new int[] { 0, 0, 0 });
-
-            /*
-            for (int n = 0; n < settings.arraySize; n++)
-            {
-                SerializedProperty settingsItem = settings.GetArrayElementAtIndex(n);
-                
-                SerializedProperty className = settingsItem.FindPropertyRelative("Name");
-
-                EditorGUI.indentLevel = indentOnSectionStart;
-
-                EditorGUILayout.BeginVertical("Box");
-                // a dropdown for the type of theme, they should make sense
-                // show event dropdown
-                int id = ReverseLookup(className.stringValue, themeOptions);
-
-                EditorGUILayout.BeginHorizontal();
-                int newId = EditorGUILayout.Popup("Theme Property", id, themeOptions);
-
-                if (n > 0)
-                {
-                    SmallButton(new GUIContent("\u2212", "Remove Theme Property"), new int[] { n }, RemoveThemeProperty);
-                    
-                }
-
-                EditorGUILayout.EndHorizontal();
-
-                if (id != newId)
-                {
-                    className.stringValue = themeOptions[newId];
-
-                    ChangeThemeProperty(n);
-                }
-
-                SerializedProperty sProps = settingsItem.FindPropertyRelative("Properties");
-                EditorGUI.indentLevel = indentOnSectionStart + 1;
-                int idCount = 0;
-                for (int p = 0; p < sProps.arraySize; p++)
-                {
-                    SerializedProperty item = sProps.GetArrayElementAtIndex(p);
-
-                    SerializedProperty propId = item.FindPropertyRelative("PropId");
-                    SerializedProperty name = item.FindPropertyRelative("Name");
-
-                    SerializedProperty shaderList = item.FindPropertyRelative("ShaderOptions");
-                    SerializedProperty shaderNames = item.FindPropertyRelative("ShaderOptionNames");
-
-                    if (shaderNames.arraySize > 0)
-                    {
-                        // show shader property dropdown
-                        if (idCount < 1)
-                        {
-                            GUILayout.Space(5);
-                        }
-                        GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
-                        popupStyle.margin.right = Mathf.RoundToInt(Screen.width * 0.25f);
-                        propId.intValue = EditorGUILayout.Popup("Material " + name.stringValue + "Id", propId.intValue, SerializedPropertyToOptions(shaderNames), popupStyle);
-                        idCount++;
-                    }
-                }
-                EditorGUI.indentLevel = indentOnSectionStart;
-                GUILayout.Space(5);
-                DrawDivider();
-
-                // show theme properties
-                SerializedProperty easing = settingsItem.FindPropertyRelative("Easing");
-                SerializedProperty ease = easing.FindPropertyRelative("EaseValues");
-
-                ease.boolValue = EditorGUILayout.Toggle(new GUIContent("Easing", "should the theme animate state values"), ease.boolValue);
-                if (ease.boolValue)
-                {
-                    EditorGUI.indentLevel = indentOnSectionStart + 1;
-                    SerializedProperty time = easing.FindPropertyRelative("LerpTime");
-                    //time.floatValue = 0.5f;
-                    SerializedProperty curve = easing.FindPropertyRelative("Curve");
-                    //curve.animationCurveValue = AnimationCurve.Linear(0, 1, 1, 1);
-
-                    time.floatValue = EditorGUILayout.FloatField(new GUIContent("Duration", "animation duration"), time.floatValue);
-                    EditorGUILayout.PropertyField(curve, new GUIContent("Animation Curve"));
-
-                    EditorGUI.indentLevel = indentOnSectionStart;
-                }
-                EditorGUILayout.EndVertical();
-            }
-            */
-
+            
             RemoveButton(new GUIContent("+", "Add Theme Property"), new int[] { 0 }, AddThemeProperty);
             // get list of all the properties from the themes
 

@@ -37,6 +37,12 @@ namespace HoloToolkit.Unity
         public Vector2 Range;
     }
 
+    public struct ShaderInfo
+    {
+        public ShaderProperties[] ShaderOptions;
+        public string Name;
+    }
+
     [System.Serializable]
     public class ThemeProperty
     {
@@ -48,6 +54,7 @@ namespace HoloToolkit.Unity
         public List<ShaderProperties> ShaderOptions;
         public List<string> ShaderOptionNames;
         public ThemePropertyValue Default;
+        public string ShaderName;
 
         public string GetShaderPropId()
         {
