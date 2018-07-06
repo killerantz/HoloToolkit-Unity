@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine.UI;
 using System.Text;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
 	public class FontList
 	{

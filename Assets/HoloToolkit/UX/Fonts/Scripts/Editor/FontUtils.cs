@@ -8,7 +8,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     public class FontUtils
     {
@@ -63,8 +63,9 @@ namespace Fonts
 
         public static Material CreateMaterial(Object target, Font font, string name, string suffix)
         {
-            Material material = new Material(Shader.Find("Fonts/FontShader3D"));
+            Material material = new Material(Shader.Find("MixedRealityToolkit/3DTextShader"));
             material.mainTexture = font.material.mainTexture;
+            material.SetFloat("_Cull", 2);
 
             // now save it next to the font
             string materialLocation = GetCleanPath(AssetDatabase.GetAssetPath(target));
@@ -210,7 +211,7 @@ namespace Fonts
             builder.AppendLine("using UnityEngine;");
             builder.AppendLine("using UnityEditor;");
             builder.AppendLine("");
-            builder.AppendLine("namespace Fonts");
+            builder.AppendLine("namespace HoloToolkit.Unity.UX");
             builder.AppendLine("{");
             builder.AppendLine("    public static class GeneratedFontsMenu");
             builder.AppendLine("    {");

@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     [System.Serializable]
     public struct FontSetData

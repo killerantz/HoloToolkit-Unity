@@ -6,22 +6,18 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     [CustomEditor(typeof(FontSetManager))]
     public class FontSetManagerEditor : InspectorBase
     {
-        private FontSetManager inspector;
-        private SerializedObject inspectorRef;
         private SerializedProperty fontDataFonts;
         private SerializedProperty fontDataIcons;
         
         private void OnEnable()
         {
-            inspector = (FontSetManager)target;
-            inspectorRef = new SerializedObject(inspector);
-            fontDataFonts = inspectorRef.FindProperty("FontList");
-            fontDataIcons = inspectorRef.FindProperty("IconList");
+            fontDataFonts = serializedObject.FindProperty("FontList");
+            fontDataIcons = serializedObject.FindProperty("IconList");
         }
 
         public override void OnInspectorGUI()
@@ -29,7 +25,6 @@ namespace Fonts
             //base.OnInspectorGUI();
 
             serializedObject.Update();
-            inspectorRef.Update();
             
             GUILayout.BeginVertical();
             DrawWarning("Materials and configuration files will be created outside of this package, please DO NOT edit or remove this file.");
@@ -108,7 +103,6 @@ namespace Fonts
             GUILayout.EndVertical();
 
             serializedObject.ApplyModifiedProperties();
-            inspectorRef.ApplyModifiedProperties();
         }
 
         private void AddFont(int index)

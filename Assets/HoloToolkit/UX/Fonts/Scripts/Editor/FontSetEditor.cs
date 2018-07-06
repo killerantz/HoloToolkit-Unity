@@ -6,7 +6,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     [CustomEditor(typeof(FontSet))]
     public class FontSetEditor : InspectorBase
@@ -129,6 +129,7 @@ namespace Fonts
         {
             dataList.InsertArrayElementAtIndex(dataList.arraySize);
             SerializedProperty newItem = dataList.GetArrayElementAtIndex(dataList.arraySize - 1);
+            // TODO: should we clean up the new item so it doesn't copy values from previous item in the list?
             SerializedProperty isEnabled = newItem.FindPropertyRelative("Enabled");
             isEnabled.boolValue = true;
 

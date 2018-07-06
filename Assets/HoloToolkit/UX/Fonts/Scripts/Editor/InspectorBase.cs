@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity
 {
     public abstract class InspectorBase : Editor
     {
@@ -93,11 +93,6 @@ namespace Fonts
 
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
-        }
-        
-        protected virtual void ButtonCallback(int index, string label, IconButtonSettings settings)
-        {
-
         }
 
         protected bool IsFontValid(Font font)

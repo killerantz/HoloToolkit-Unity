@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     [CustomEditor(typeof(IconSet))]
     public class IconSetEditor : InspectorBase
@@ -190,7 +190,7 @@ namespace Fonts
             sMaterial.objectReferenceValue = material;
         }
 
-        protected override void ButtonCallback(int index, string label, IconButtonSettings settings)
+        protected void ButtonCallback(int index, string label, IconButtonSettings settings)
         {
             bool isEnabled = inspector.Data[settings.hostIndex].getCharCodeEnabled(index);
             inspector.Data[settings.hostIndex].SetCharCodeEnabled(index, !isEnabled);

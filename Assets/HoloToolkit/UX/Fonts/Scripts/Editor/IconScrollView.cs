@@ -10,7 +10,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
 
     /// <summary>

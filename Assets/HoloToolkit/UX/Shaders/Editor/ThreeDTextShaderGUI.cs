@@ -5,12 +5,12 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     /// <summary>
     /// Editor for FastConfigurable shader
     /// </summary>
-    public class FontShader3DGUI : ShaderGUI
+    public class ThreeDTextShaderGUI : ShaderGUI
     {
         protected bool firstTimeApply = true;
         protected MaterialProperty cullMode;

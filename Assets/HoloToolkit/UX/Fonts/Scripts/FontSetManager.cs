@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace Fonts
+namespace HoloToolkit.Unity.UX
 {
     [System.Serializable]
     public class FontData
@@ -23,9 +23,9 @@ namespace Fonts
 
         public IconSet IconSet;
 
-        public List<FontData> FontList = new List<Fonts.FontData>();
+        public List<FontData> FontList = new List<FontData>();
 
-        public List<FontData> IconList = new List<Fonts.FontData>();
+        public List<FontData> IconList = new List<FontData>();
 
         private static FontSetManager instance = null;
 
