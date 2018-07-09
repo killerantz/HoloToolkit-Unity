@@ -47,8 +47,6 @@ namespace HoloToolkit.Unity.UX
     {
         [HideInInspector]
         public List<IconSetData> Data = new List<IconSetData>();
-
-        private int stackSize = 10;
         
     }
 }
