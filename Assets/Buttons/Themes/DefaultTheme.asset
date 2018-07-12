@@ -27,7 +27,7 @@ MonoBehaviour:
         Material: {fileID: 0}
         GameObject: {fileID: 0}
         Vector2: {x: 0, y: 0}
-        Vector3: {x: 2, y: 3, z: 1}
+        Vector3: {x: 1, y: 1, z: 1}
         Vector4: {x: 0, y: 0, z: 0, w: 0}
         Color: {r: 0, g: 0, b: 0, a: 0}
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
@@ -113,6 +113,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     - Name: Offset
       Type: 6
       Values:
@@ -211,6 +212,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     - Name: Color
       Type: 2
       Values:
@@ -325,6 +327,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     History:
     - Name: Color
       Type: 2
@@ -424,6 +427,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     - Name: Offset
       Type: 6
       Values:
@@ -522,6 +526,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     - Name: Scale
       Type: 6
       Values:
@@ -620,6 +625,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     - Name: Shader
       Type: 3
       Values:
@@ -718,6 +724,7 @@ MonoBehaviour:
         Quaternion: {x: 0, y: 0, z: 0, w: 0}
         AudioClip: {fileID: 0}
         Animation: {fileID: 0}
+      ShaderName: 
     Easing:
       EaseValues: 1
       Curve:
@@ -741,3 +748,4 @@ MonoBehaviour:
       LerpTime: 0.3
     IsValid: 1
   CustomSettings: []
+  States: {fileID: 0}

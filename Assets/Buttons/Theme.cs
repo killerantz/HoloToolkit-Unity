@@ -23,5 +23,16 @@ namespace HoloToolkit.Unity
         public string Name;
         public List<ThemePropertySettings> Settings;
         public List<ThemePropertyValue> CustomSettings;
+        public States States;
+
+        public State[] GetStates()
+        {
+            if (States != null)
+            {
+                return States.GetStates();
+            }
+
+            return new State[0];
+        }
     }
 }

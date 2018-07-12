@@ -25,7 +25,7 @@ namespace HoloToolkit.Unity
 
         public override ThemePropertyValue GetProperty(ThemeProperty property)
         {
-            ThemePropertyValue color = property.StartValue;
+            ThemePropertyValue color = new ThemePropertyValue();
             TextMesh mesh = Host.GetComponent<TextMesh>();
             if (mesh != null)
             {

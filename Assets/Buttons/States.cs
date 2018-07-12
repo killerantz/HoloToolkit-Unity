@@ -8,7 +8,7 @@ namespace HoloToolkit.Unity
     [CreateAssetMenu(fileName = "States", menuName = "Interactable/State", order = 1)]
     public class States : ScriptableObject
     {
-        public StateModel StateLogic;
+        public InteractableStates StateLogic;
         public List<State> StateList;
         public int DefaultIndex = 0;
         public Type StateType;
@@ -17,28 +17,23 @@ namespace HoloToolkit.Unity
         public string StateLogicName = "InteractableStates";
 
         //!!! finish making states work, they shoulg initiate the type and run the logic during play mode.
-
-        public State CompareStates(bool[] states)
+        private void OnEnable()
         {
-            if (StateLogic == null)
-            {
-                StateLogic = (StateModel)Activator.CreateInstance(StateType, StateList[DefaultIndex]);
-            }
-            return StateLogic.CompareStates(states);
+            SetupStateOptions();
         }
-
+        
         public State[] GetStates()
         {
             return StateList.ToArray();
         }
 
-        public State CurrentState()
+        public InteractableStates SetupLogic()
         {
-            if (StateLogic == null)
-            {
-                StateLogic = (StateModel)Activator.CreateInstance(StateType, StateList[DefaultIndex]);
-            }
-            return StateLogic.CurrentState();
+            int index = ReverseLookup(StateLogicName, StateOptions);
+            StateType = StateTypes[index];
+            StateLogic = (InteractableStates)Activator.CreateInstance(StateType, StateList[DefaultIndex]);
+            StateLogic.ImportStates(StateList);
+            return StateLogic;
         }
 
         public void SetupStateOptions()
@@ -52,7 +47,7 @@ namespace HoloToolkit.Unity
                 var types = assembly.GetTypes();
                 foreach (var type in types)
                 {
-                    if (type.IsSubclassOf(typeof(StateModel)))
+                    if (type.Equals(typeof(InteractableStates)) || type.IsSubclassOf(typeof(InteractableStates)))
                     {
                         stateTypes.Add(type);
                         names.Add(type.Name);
@@ -77,6 +72,5 @@ namespace HoloToolkit.Unity
 
             return 0;
         }
-
     }
 }

@@ -20,16 +20,16 @@ namespace HoloToolkit.Unity
             Name = "OnHold";
         }
 
-        public override void OnUpdate(State state)
+        public override void OnUpdate(InteractableStates state)
         {
-            bool changed = state != lastState;
+            bool changed = state.CurrentState() != lastState;
             
-            if (state == InteractableStates.Press && !hasDown)
+            if (state.GetState(InteractableStates.InteractableStateEnum.Pressed).Value > 0 && !hasDown)
             {
                 hasDown = true;
                 clickTimer = 0;
             }
-            else if(state != InteractableStates.Press)
+            else if(state.GetState(InteractableStates.InteractableStateEnum.Pressed).Value < 1)
             {
                 hasDown = false;
             }
@@ -45,7 +45,7 @@ namespace HoloToolkit.Unity
                 }
             }
             
-            lastState = state;
+            lastState = state.CurrentState();
         }
     }
 }

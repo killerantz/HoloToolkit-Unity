@@ -13,26 +13,11 @@ namespace HoloToolkit.Unity
     [CustomEditor(typeof(Interactable))]
     public class InteractableInspector : InspectorBase
     {
-
-        public struct ListSettings
-        {
-            public bool Show;
-            public Vector2 Scroll;
-        }
-
-        public struct EventSettings
-        {
-            public bool Show;
-            public Vector2 Scroll;
-        }
-
         protected Interactable instance;
         protected List<InteractableEvent> eventList;
         protected SerializedProperty profileList;
         protected static bool showProfiles;
         protected string prefKey = "InteractableInspectorProfiles";
-        protected List<ListSettings> listSettings;
-        protected List<EventSettings> eventSettings;
         protected bool enabled = false;
 
         protected string[] eventOptions;
@@ -47,9 +32,7 @@ namespace HoloToolkit.Unity
         {
             instance = (Interactable)target;
             eventList = instance.Events;
-
-            listSettings = new List<ListSettings>();
-
+           
             profileList = serializedObject.FindProperty("Profiles");
             AdjustListSettings(profileList.arraySize);
             showProfiles = EditorPrefs.GetBool(prefKey, showProfiles);
@@ -76,6 +59,8 @@ namespace HoloToolkit.Unity
             // TODO: let flow into rest of themes and events.
             // TODO: events should target the state logic they support.
 
+            // FIX: when deleting a theme property, the value resets or the item that's deleted is wrong
+
             serializedObject.Update();
 
             EditorGUILayout.Space();
@@ -85,15 +70,33 @@ namespace HoloToolkit.Unity
             EditorGUILayout.BeginVertical("Box");
 
             // States
+            bool showStates = false;
             SerializedProperty states = serializedObject.FindProperty("States");
-            string statesPrefKey = target.name + "Settings_States";
-            bool prefsShowStates = EditorPrefs.GetBool(statesPrefKey);
-            EditorGUI.indentLevel = indentOnSectionStart + 1;
-            bool showStates = DrawSectionStart(states.objectReferenceValue.name + " (Click to edit)", indentOnSectionStart + 2, prefsShowStates, FontStyle.Normal, false);
-
-            if (showStates != prefsShowStates)
+            if (states.objectReferenceValue != null)
             {
-                EditorPrefs.SetBool(statesPrefKey, showStates);
+                string statesPrefKey = target.name + "Settings_States";
+                bool prefsShowStates = EditorPrefs.GetBool(statesPrefKey);
+                EditorGUI.indentLevel = indentOnSectionStart + 1;
+                showStates = DrawSectionStart(states.objectReferenceValue.name + " (Click to edit)", indentOnSectionStart + 2, prefsShowStates, FontStyle.Normal, false);
+            
+                if (showStates != prefsShowStates)
+                {
+                    EditorPrefs.SetBool(statesPrefKey, showStates);
+                }
+            }
+            else
+            {
+                string[] stateLocations = AssetDatabase.FindAssets("DefaultInteractableStates t:States");
+                if (stateLocations.Length > 0)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(stateLocations[0]);
+                    States defaultStates = (States)AssetDatabase.LoadAssetAtPath(path, typeof(States));
+                    states.objectReferenceValue = defaultStates;
+                }
+                else
+                {
+                    showStates = true;
+                }
             }
 
             if (showStates)
@@ -420,30 +423,7 @@ namespace HoloToolkit.Unity
             return new string[] { };
         }
 
-        protected void AdjustListSettings(int count)
-        {
-            int diff = count - listSettings.Count;
-            if (diff > 0)
-            {
-                for (int i = 0; i < diff; i++)
-                {
-                    listSettings.Add(new ListSettings() { Show = false, Scroll = new Vector2() });
-                }
-            }
-            else if (diff < 0)
-            {
-                int removeCnt = 0;
-                for (int i = listSettings.Count - 1; i > -1; i--)
-                {
-                    if (removeCnt > diff)
-                    {
-                        listSettings.RemoveAt(i);
-                        removeCnt--;
-                    }
-                }
-            }
-        }
-
+        
         protected void AddProfile(int index)
         {
             profileList.InsertArrayElementAtIndex(profileList.arraySize);
@@ -463,17 +443,17 @@ namespace HoloToolkit.Unity
             profileList.DeleteArrayElementAtIndex(index);
         }
 
-        protected void AddThemeProperty(int[] arr)
+        protected virtual void AddThemeProperty(int[] arr)
         {
             int profile = arr[0];
             int theme = arr[1];
             int index = arr[2];
-
+            
             SerializedProperty dimensions = serializedObject.FindProperty("Dimensions");
 
             SerializedProperty sItem = profileList.GetArrayElementAtIndex(profile);
             SerializedProperty themes = sItem.FindPropertyRelative("Themes");
-            SerializedProperty target = sItem.FindPropertyRelative("Target");
+            SerializedProperty serializedTarget = sItem.FindPropertyRelative("Target");
 
             SerializedProperty themeItem = themes.GetArrayElementAtIndex(theme);
             SerializedObject themeObj = new SerializedObject(themeItem.objectReferenceValue);
@@ -500,7 +480,7 @@ namespace HoloToolkit.Unity
             time.floatValue = 0.5f;
             curve.animationCurveValue = AnimationCurve.Linear(0, 1, 1, 1);
 
-            themeObj = ChangeThemeProperty(themeObjSettings.arraySize - 1, themeObj, target, true);
+            themeObj = ChangeThemeProperty(themeObjSettings.arraySize - 1, themeObj, serializedTarget, true);
 
             themeObj.ApplyModifiedProperties();
         }
@@ -1026,7 +1006,17 @@ namespace HoloToolkit.Unity
 
                 if (n > 0)
                 {
-                    SmallButton(new GUIContent("\u2212", "Remove Theme Property"), listIndex, RemoveThemeProperty);
+                    if(listIndex[1] < 0)
+                    {
+                        listIndex[2] = n;
+                    }
+
+                    bool removed = SmallButton(new GUIContent("\u2212", "Remove Theme Property"), listIndex, RemoveThemeProperty);
+
+                    if (removed)
+                    {
+                        continue;
+                    }
                 }
 
                 EditorGUILayout.EndHorizontal();

@@ -6,6 +6,14 @@ namespace HoloToolkit.Unity
 {
     public abstract class InspectorBase : Editor
     {
+        public struct ListSettings
+        {
+            public bool Show;
+            public Vector2 Scroll;
+        }
+
+        // add custom settings
+
         // Colors
         protected readonly static Color defaultColor = new Color(1f, 1f, 1f);
         protected readonly static Color baseColor = new Color(0.75f, 0.75f, 0.75f);
@@ -14,10 +22,22 @@ namespace HoloToolkit.Unity
         protected readonly static Color errorColor = new Color(1f, 0.55f, 0.5f);
         protected readonly static Color successColor = new Color(0.5f, 1f, 0.5f);
         protected readonly static Color titleColor = new Color(0.5f, 0.5f, 0.5f);
-        protected readonly static Color sectionColor = new Color(0.85f, 0.9f, 1f); //
+        protected readonly static Color sectionColor = new Color(0.85f, 0.9f, 1f);
 
         protected const int titleFontSize = 14;
         protected const int defaultFontSize = 10;
+
+        protected readonly static string minus = "\u2212";
+        protected readonly static string plus = "\u002B";
+        protected readonly static string astrisk = "\u2217";
+        protected readonly static string left = "\u02C2";
+        protected readonly static string right = "\u02C3";
+        protected readonly static string up = "\u02C4";
+        protected readonly static string down = "\u02C5";
+        protected readonly static string close = "\u2715";
+        protected readonly static string heart = "\u2661";
+        protected readonly static string star = "\u2606";
+        protected readonly static string emoji = "\u263A";
 
         protected static int indentOnSectionStart = 0;
 
@@ -25,6 +45,17 @@ namespace HoloToolkit.Unity
 
         protected delegate void ListButtonEvent(int index);
         protected delegate void MultiListButtonEvent(int[] arr);
+
+        protected List<ListSettings> listSettings;
+
+        protected GUIStyle boxStyle;
+
+        public static GUIStyle Box(int margin)
+        {
+            GUIStyle box = new GUIStyle(GUI.skin.box);
+            box.margin.left = margin;
+            return box;
+        }
 
         protected virtual bool RemoveButton(GUIContent label, int index, ListButtonEvent callback)
         {
@@ -258,6 +289,59 @@ namespace HoloToolkit.Unity
         {
             EditorGUILayout.EndVertical();
             EditorGUI.indentLevel = indent;
+        }
+
+        // move this to a base class and target the local settings
+        protected void AdjustListSettings(int count)
+        {
+            if(listSettings == null)
+            {
+                listSettings = new List<ListSettings>();
+            }
+
+            int diff = count - listSettings.Count;
+            if (diff > 0)
+            {
+                for (int i = 0; i < diff; i++)
+                {
+                    listSettings.Add(new ListSettings() { Show = false, Scroll = new Vector2() });
+                }
+            }
+            else if (diff < 0)
+            {
+                int removeCnt = 0;
+                for (int i = listSettings.Count - 1; i > -1; i--)
+                {
+                    if (removeCnt > diff)
+                    {
+                        listSettings.RemoveAt(i);
+                        removeCnt--;
+                    }
+                }
+            }
+        }
+        
+        protected static int GetOptionsIndex(SerializedProperty options, string selection)
+        {
+            for (int i = 0; i < options.arraySize; i++)
+            {
+                if (options.GetArrayElementAtIndex(i).stringValue == selection)
+                {
+                    return i;
+                }
+            }
+
+            return 0;
+        }
+        
+        public static string[] SerializedPropertyToOptions(SerializedProperty arr)
+        {
+            List<string> list = new List<string>();
+            for (int i = 0; i < arr.arraySize; i++)
+            {
+                list.Add(arr.GetArrayElementAtIndex(i).stringValue);
+            }
+            return list.ToArray();
         }
     }
 }

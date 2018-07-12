@@ -12,9 +12,13 @@ namespace HoloToolkit.Unity
 
     public class Interactable : MonoBehaviour, IInputClickHandler, IFocusable, IInputHandler
     {
-        public bool Enabled;
+
+        // TODO: Has bug where the disabled state is getting set for all buttons!!!!!!!!!!!!
+
+        public bool Enabled = true;
         //public InteractableStates State;
         public States States;
+        public InteractableStates StateManager;
         public InteractionSourcePressInfo ButtonPressFilter = InteractionSourcePressInfo.Select;
         public bool IsGlobal = false;
         public int Dimensions = 1;
@@ -31,10 +35,11 @@ namespace HoloToolkit.Unity
         public bool IsDisabled { get; private set; }
 
         private State lastState;
+        private bool wasDisabled = false;
 
         // these should get simplified and moved
         // create a ScriptableObject for managing states!!!!
-
+        
         public State[] GetStates()
         {
             if (States != null)
@@ -53,6 +58,12 @@ namespace HoloToolkit.Unity
             //State = new InteractableStates(InteractableStates.Default);
             SetupEvents();
             SetupThemes();
+            SetupStates();
+        }
+
+        protected virtual void SetupStates()
+        {
+            StateManager = States.SetupLogic();
         }
 
         protected virtual void SetupEvents()
@@ -101,22 +112,30 @@ namespace HoloToolkit.Unity
 
         //collider checks and other alerts
 
+        public int GetStateValue(InteractableStates.InteractableStateEnum state)
+        {
+            return StateManager.GetStateValue((int)state);
+        }
+
         // state management
         public virtual void SetFocus(bool focus)
         {
             HasFocus = focus;
+            StateManager.SetStateValue(InteractableStates.InteractableStateEnum.Focus, focus ? 1 : 0);
             UpdateState();
         }
 
         public virtual void SetPress(bool press)
         {
             HasPress = press;
+            StateManager.SetStateValue(InteractableStates.InteractableStateEnum.Pressed, press ? 1 : 0);
             UpdateState();
         }
 
         public virtual void SetDisabled(bool disabled)
         {
             IsDisabled = disabled;
+            StateManager.SetStateValue(InteractableStates.InteractableStateEnum.Disabled, disabled ? 1 : 0);
             UpdateState();
         }
 
@@ -132,10 +151,12 @@ namespace HoloToolkit.Unity
 
         public virtual void OnInputClicked(InputClickedEventData eventData)
         {
-            if (States != null)
+            if (StateManager != null)
             {
-                if (States.CurrentState() != InteractableStates.Disabled && eventData.PressType == ButtonPressFilter)
+                State[] states = StateManager.GetStates();
+                if (StateManager.CurrentState() != StateManager.GetState(InteractableStates.InteractableStateEnum.Disabled) && eventData.PressType == ButtonPressFilter)
                 {
+                    StateManager.SetStateValue(InteractableStates.InteractableStateEnum.Visited, 1);
                     OnClick.Invoke();
                 }
             }
@@ -153,7 +174,7 @@ namespace HoloToolkit.Unity
 
         protected virtual void UpdateState()
         {
-            States.CompareStates(new bool[] { HasFocus, HasPress, IsDisabled });
+            StateManager.CompareStates();
         }
 
         protected virtual void Update()
@@ -162,7 +183,7 @@ namespace HoloToolkit.Unity
             {
                 if (Events[i].Receiver != null)
                 {
-                    Events[i].Receiver.OnUpdate(States.CurrentState());
+                    Events[i].Receiver.OnUpdate(StateManager);
                     ReceiverBase reciever = Events[i].Receiver;
                 }
             }
@@ -171,16 +192,21 @@ namespace HoloToolkit.Unity
             {
                 if (runningThemesList[i].Loaded)
                 {
-                    runningThemesList[i].OnUpdate(States.CurrentState().Index);
+                    runningThemesList[i].OnUpdate(StateManager.CurrentState().ActiveIndex);
                 }
             }
 
-            if (lastState != States.CurrentState())
+            if (lastState != StateManager.CurrentState())
             {
 
             }
 
-            lastState = States.CurrentState();
+            if(IsDisabled == Enabled)
+            {
+                SetDisabled(!Enabled);
+            }
+
+            lastState = StateManager.CurrentState();
         }
 
     }

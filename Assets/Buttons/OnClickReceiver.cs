@@ -20,14 +20,16 @@ namespace HoloToolkit.Unity
             Name = "OnClick";
         }
 
-        public override void OnUpdate(State state)
+        public override void OnUpdate(InteractableStates state)
         {
-            bool changed = state != lastState;
+            bool changed = state.CurrentState() != lastState;
             
             bool hadDown = hasDown;
-            hasDown = state == InteractableStates.Press;
+            hasDown = state.GetState(InteractableStates.InteractableStateEnum.Pressed).Value > 0;
 
-            if (hadDown && !hasDown && state == InteractableStates.Focus && clickTimer < ClickTime)
+            bool focused = state.GetState(InteractableStates.InteractableStateEnum.Focus).Value > 0;
+
+            if (hadDown && !hasDown && focused && clickTimer < ClickTime)
             {
                 Debug.Log("Click!");
                 uEvent.Invoke();
@@ -42,7 +44,7 @@ namespace HoloToolkit.Unity
                 clickTimer += Time.deltaTime;
             }
 
-            lastState = state;
+            lastState = state.CurrentState();
         }
     }
 }

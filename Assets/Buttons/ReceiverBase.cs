@@ -16,6 +16,6 @@ namespace HoloToolkit.Unity
             uEvent = ev;
         }
 
-        public abstract void OnUpdate(State state);
+        public abstract void OnUpdate(InteractableStates state);
     }
 }
