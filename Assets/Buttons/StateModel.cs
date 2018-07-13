@@ -56,7 +56,6 @@ namespace HoloToolkit.Unity
             {
                 State state = allStates[stateList[i].Index];
                 state.ActiveIndex = i;
-                allStates[stateList[i].Index] = state;
             }
         }
 
@@ -66,7 +65,6 @@ namespace HoloToolkit.Unity
             {
                 State state = allStates[index];
                 state.Value = 1;
-                allStates[index] = state;
                 SetStateListValue(state.ActiveIndex, 1);
             }
         }
@@ -77,7 +75,6 @@ namespace HoloToolkit.Unity
             {
                 State state = allStates[index];
                 state.Value = 0;
-                allStates[index] = state;
                 SetStateListValue(state.ActiveIndex, 0);
             }
         }
@@ -88,7 +85,6 @@ namespace HoloToolkit.Unity
             {
                 State state = allStates[index];
                 state.Value = value;
-                allStates[index] = state;
                 SetStateListValue(state.ActiveIndex, value);
             }
         }
@@ -99,7 +95,6 @@ namespace HoloToolkit.Unity
             {
                 State state = stateList[index];
                 state.Value = value;
-                stateList[index] = state;
             }
         }
 
@@ -162,7 +157,7 @@ namespace HoloToolkit.Unity
                     bitCount += bit;
                 }
             }
-
+            
             return bitCount;
         }
     }

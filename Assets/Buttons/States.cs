@@ -8,7 +8,6 @@ namespace HoloToolkit.Unity
     [CreateAssetMenu(fileName = "States", menuName = "Interactable/State", order = 1)]
     public class States : ScriptableObject
     {
-        public InteractableStates StateLogic;
         public List<State> StateList;
         public int DefaultIndex = 0;
         public Type StateType;
@@ -31,9 +30,21 @@ namespace HoloToolkit.Unity
         {
             int index = ReverseLookup(StateLogicName, StateOptions);
             StateType = StateTypes[index];
-            StateLogic = (InteractableStates)Activator.CreateInstance(StateType, StateList[DefaultIndex]);
-            StateLogic.ImportStates(StateList);
-            return StateLogic;
+            InteractableStates stateLogic = (InteractableStates)Activator.CreateInstance(StateType, StateList[DefaultIndex]);
+            List<State> stateListCopy = new List<State>();
+            for (int i = 0; i < StateList.Count; i++)
+            {
+                State state = new State();
+                state.ActiveIndex = StateList[i].ActiveIndex;
+                state.Bit = StateList[i].Bit;
+                state.Index = StateList[i].Index;
+                state.Name = StateList[i].Name;
+                state.Value = StateList[i].Value;
+                stateListCopy.Add(state);
+            }
+            stateLogic.ImportStates(stateListCopy);
+            
+            return stateLogic;
         }
 
         public void SetupStateOptions()

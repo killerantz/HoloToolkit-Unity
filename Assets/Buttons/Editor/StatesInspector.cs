@@ -71,6 +71,7 @@ namespace HoloToolkit.Unity
                 SerializedProperty name = stateItem.FindPropertyRelative("Name");
                 SerializedProperty index = stateItem.FindPropertyRelative("ActiveIndex");
                 SerializedProperty bit = stateItem.FindPropertyRelative("Bit");
+                SerializedProperty value = stateItem.FindPropertyRelative("Value");
 
                 index.intValue = i;
 

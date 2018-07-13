@@ -20,7 +20,7 @@ MonoBehaviour:
   - Name: Focus
     Index: 1
     Bit: 2
-    Value: 1
+    Value: 0
     ActiveIndex: 1
   - Name: Pressed
     Index: 2

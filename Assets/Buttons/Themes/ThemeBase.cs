@@ -74,7 +74,12 @@ namespace HoloToolkit.Unity
         public bool EaseValues = false;
         public AnimationCurve Curve = AnimationCurve.Linear(0, 1, 1, 1);
         public float LerpTime = 0.5f;
-        private float timer = 0;
+        private float timer = 0.5f;
+
+        public EaseSettings()
+        {
+            Stop();
+        }
 
         public void OnUpdate()
         {
@@ -96,6 +101,11 @@ namespace HoloToolkit.Unity
         public bool IsPlaying()
         {
             return timer < LerpTime;
+        }
+
+        public void Stop()
+        {
+            timer = LerpTime;
         }
 
         public float GetLinear()
@@ -176,6 +186,7 @@ namespace HoloToolkit.Unity
             }
 
             Ease = CopyEase(settings.Easing);
+            Ease.Stop();
 
             Loaded = true;
 
@@ -217,7 +228,10 @@ namespace HoloToolkit.Unity
                     else
                     {
                         SetValue(current, state, 1);
-                        hasFirstState = true;
+                        if(i >= ThemeProperties.Count - 1)
+                        {
+                            hasFirstState = true;
+                        }
                     }
                     ThemeProperties[i] = current;
                 }
@@ -225,7 +239,6 @@ namespace HoloToolkit.Unity
             else if(Ease.EaseValues && Ease.IsPlaying())
             {
                 Ease.OnUpdate();
-                
                 for (int i = 0; i < ThemeProperties.Count; i++)
                 {
                     ThemeProperty current = ThemeProperties[i];
@@ -269,9 +282,8 @@ namespace HoloToolkit.Unity
                         }
                     }
                 }
+                gameObject.GetComponent<Renderer>().SetPropertyBlock(materialBlock);
             }
-
-            gameObject.GetComponent<Renderer>().SetPropertyBlock(materialBlock);
 
             return materialBlock;
         }
@@ -280,7 +292,10 @@ namespace HoloToolkit.Unity
         {
             MaterialPropertyBlock materialBlock = new MaterialPropertyBlock();
             Renderer renderer = gameObject.GetComponent<Renderer>();
-            renderer.GetPropertyBlock(materialBlock);
+            if (renderer != null)
+            {
+                renderer.GetPropertyBlock(materialBlock);
+            }
             return materialBlock;
         }
 

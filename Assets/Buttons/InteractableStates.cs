@@ -119,9 +119,11 @@ namespace HoloToolkit.Unity
                 if (bit >= stateList[i].Bit)
                 {
                     currentState = stateList[i];
-                    return currentState;
+                    break;
+                    //return currentState;
                 }
             }
+
             return currentState;
         }
         

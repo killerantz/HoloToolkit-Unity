@@ -15,6 +15,7 @@ namespace HoloToolkit.Unity
             base.Init(host, settings);
             startPosition = Host.transform.localPosition;
             startScale = Host.transform.localScale;
+
         }
 
         public ScaleOffsetColorTheme()
@@ -80,7 +81,6 @@ namespace HoloToolkit.Unity
                     Host.transform.localPosition = Vector3.Lerp(property.StartValue.Vector3, startPosition + property.Values[index].Vector3, percentage);
                     break;
                 case "Color":
-                    //Debug.Log(Host.name + " / " + property.StartValue.Color + " / " + property.Values[index].Color + " / " + percentage);
                     base.SetValue(property, index, percentage);
                     break;
                 default:
