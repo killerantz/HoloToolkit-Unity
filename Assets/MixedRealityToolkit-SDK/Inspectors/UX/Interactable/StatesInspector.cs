@@ -89,12 +89,12 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
                     name.stringValue = stateEnums[newEnumIndex];
                 }
 
+                // assign the bitcount based on location in the list
+                bit.intValue = bitCount;
+
                 InspectorUIUtility.SmallButton(new GUIContent(InspectorUIUtility.Minus, "Remove State"), i, RemoveState);
                 
                 EditorGUILayout.EndHorizontal();
-
-                // assign the bitcount based on location in the list
-                bit.intValue = bitCount;
                 
                 EditorGUILayout.EndVertical();
             }

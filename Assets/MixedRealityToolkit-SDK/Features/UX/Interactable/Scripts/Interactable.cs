@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.MixedReality.Toolkit.Core.Definitions.Devices;
 using Microsoft.MixedReality.Toolkit.Core.Definitions.InputSystem;
 using Microsoft.MixedReality.Toolkit.Core.EventDatum.Input;
 using Microsoft.MixedReality.Toolkit.Core.Interfaces.InputSystem;
@@ -29,8 +30,16 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 
     [System.Serializable]
 
-    public class Interactable : MonoBehaviour, IMixedRealityInputHandler, IMixedRealityFocusHandler, IMixedRealityPointerHandler, IMixedRealitySpeechHandler // TEMP , IInputClickHandler, IFocusable, IInputHandler
+    public class Interactable : MonoBehaviour, IMixedRealityInputHandler, IMixedRealityFocusHandler, IMixedRealityPointerHandler, IMixedRealitySpeechHandler//, IMixedRealityGestureHandler<Vector3>, IMixedRealityGestureHandler<Vector2>, IMixedRealityGestureHandler<Quaternion>
     {
+        public struct PointerData
+        {
+            public IMixedRealityPointer Pointer;
+            public bool HasPress;
+            public bool HasFocus;
+            public int ActionScore;
+        }
+
         /// <summary>
         /// Setup the input system
         /// </summary>
@@ -40,6 +49,8 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         // list of pointers
         protected List<IMixedRealityPointer> pointers = new List<IMixedRealityPointer>();
         public List<IMixedRealityPointer> Focusers => pointers;
+
+        protected List<PointerData> pointerData = new List<PointerData>();
 
         // is the interactable enabled?
         public bool Enabled = true;
@@ -458,6 +469,122 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             pointers.Remove(pointer);
         }
 
+        /// <summary>
+        /// Removes a pointer, lost focus
+        /// </summary>
+        /// <param name="pointer"></param>
+        public void AddPointerData(IMixedRealityPointer pointer )
+        {
+            bool hasPointer = false;
+            for (int i = 0; i < pointerData.Count; i++)
+            {
+                if (pointer.PointerId == pointerData[i].Pointer.PointerId)
+                {
+                    hasPointer = true;
+                    break;
+                }
+            }
+
+            if (!hasPointer)
+            {
+                PointerData data = new PointerData() { Pointer = pointer, HasFocus = true};
+                pointerData.Add(data);
+            }
+        }
+
+        /// <summary>
+        /// Removes a pointer, lost focus
+        /// </summary>
+        /// <param name="pointer"></param>
+        public void RemovePointerData(IMixedRealityPointer pointer)
+        {
+            int count = pointerData.Count -1;
+            for (int i = count; i > -1; i--)
+            {
+                if (pointer.PointerId == pointerData[i].Pointer.PointerId)
+                {
+                    pointerData.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        public void UpdatePointerPressed(IMixedRealityPointer pointer, bool hasPress)
+        {
+            for (int i = 0; i < pointerData.Count; i++)
+            {
+                bool removed = false;
+                if(pointer.PointerId == pointerData[i].Pointer.PointerId)
+                {
+                    PointerData data = pointerData[i];
+
+                    if (hasPress != data.HasPress)
+                    {
+                        if (pointer.Controller != null && hasPress)
+                        {
+                            MixedRealityInteractionMapping[] mappings = pointer.Controller.Interactions;
+                            int count = 0;
+                            for (int j = 0; j < mappings.Length; j++)
+                            {
+                                count += Mathf.RoundToInt(mappings[j].FloatData);
+                            }
+                            data.ActionScore = count;
+                        }
+
+                        if (!hasPress && !data.HasFocus)
+                        {
+                            RemovePointer(data.Pointer);
+                        }
+
+                        data.HasPress = hasPress;
+                    }
+                    
+                    if(!removed)
+                        pointerData[i] = data;
+
+                    break;
+                }
+            }
+        }
+
+        public void UpdatePointerFocus(IMixedRealityPointer pointer, bool hasFocus)
+        {
+            for (int i = 0; i < pointerData.Count; i++)
+            {
+                if (pointer.PointerId == pointerData[i].Pointer.PointerId)
+                {
+                    PointerData data = pointerData[i];
+                    data.HasFocus = hasFocus;
+                    pointerData[i] = data;
+
+                    if (!hasFocus && !data.HasPress)
+                    {
+                        RemovePointer(data.Pointer);
+                    }
+                    
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get the currenlt list of pointers
+        /// </summary>
+        /// <returns></returns>
+        public List<IMixedRealityPointer> GetPointers()
+        {
+            return pointers;
+        }
+
+        /// <summary>
+        /// Get the current list of interactive pointers
+        /// </summary>
+        /// <returns></returns>
+        public List<PointerData> GetPointerData()
+        {
+            return pointerData;
+        }
+
         #endregion PointerManagement
 
         #region MixedRealityFocusHandlers
@@ -470,6 +597,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             }
 
             AddPointer(eventData.Pointer);
+            AddPointerData(eventData.Pointer);
             SetFocus(pointers.Count > 0);
         }
 
@@ -481,6 +609,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             }
 
             RemovePointer(eventData.Pointer);
+            UpdatePointerFocus(eventData.Pointer, false);
             SetFocus(pointers.Count > 0);
         }
 
@@ -574,6 +703,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 
             if (ShouldListen(eventData.MixedRealityInputAction))
             {
+                UpdatePointerPressed(eventData.Pointer, false);
                 SetPress(false);
             }
         }
@@ -587,6 +717,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 
             if (ShouldListen(eventData.MixedRealityInputAction))
             {
+                UpdatePointerPressed(eventData.Pointer, true);
                 SetPress(true);
             }
         }
@@ -775,6 +906,57 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             {
                 OnPointerClicked(null);
             }
+        }
+
+        public void OnGestureUpdated(InputEventData<Vector3> eventData)
+        {
+            print("Gesture Updated 0 : " + eventData.InputData + " / " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureCompleted(InputEventData<Vector3> eventData)
+        {
+            
+            print("Gesture Completed 0 : " + eventData.InputData + " / " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureStarted(InputEventData eventData)
+        {
+            print("Gesture Started 1 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureUpdated(InputEventData eventData)
+        {
+            print("Gesture Udpated 1 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureCompleted(InputEventData eventData)
+        {
+            print("Gesture Completed 1 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureCanceled(InputEventData eventData)
+        {
+            print("Gesture Canceled 1 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureUpdated(InputEventData<Vector2> eventData)
+        {
+            print("Gesture Udated 2 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureCompleted(InputEventData<Vector2> eventData)
+        {
+            print("Gesture Completed 2 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureUpdated(InputEventData<Quaternion> eventData)
+        {
+            print("Gesture Updated 3 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
+        }
+
+        public void OnGestureCompleted(InputEventData<Quaternion> eventData)
+        {
+            print("Gesture Completed 3 : " + eventData.MixedRealityInputAction.Description + " / " + eventData.SourceId);
         }
     }
 }

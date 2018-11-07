@@ -37,5 +37,6 @@ namespace Microsoft.MixedReality.Toolkit.Core.Utilities.InspectorFields
         public Quaternion QuaternionValue;
         public UnityEvent EventValue;
         public string[] Options;
+        public List<UnityEngine.Object> ArrayValue;
     }
 }

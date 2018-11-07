@@ -14,11 +14,19 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
     /// </summary>
     public class InteractableOnFocusReceiver : ReceiverBase
     {
+        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "On Focus Delay", Tooltip = "Delay the onFocus event")]
+        public float OnFocusDelay = 0;
+
         [InspectorField(Type = InspectorField.FieldTypes.Event, Label = "On Focus Off", Tooltip = "Focus has left the object")]
         public UnityEvent OnFocusOff = new UnityEvent();
 
+        [InspectorField(Type = InspectorField.FieldTypes.Float, Label = "On Focus Off Delay", Tooltip = "Delay the onFocusOff event")]
+        public float OnFocusOffDelay = 0;
+
         private bool hadFocus;
         private State lastState;
+
+        private Coroutine timer;
 
         public InteractableOnFocusReceiver(UnityEvent ev) : base(ev)
         {
@@ -33,18 +41,44 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 
             if (hadFocus != hasFocus && changed)
             {
+                if (timer != null)
+                {
+                    source.StopCoroutine(timer);
+                }
+
                 if (hasFocus)
                 {
-                    uEvent.Invoke();
+                    if (OnFocusDelay > 0)
+                    {
+                        timer = source.StartCoroutine(DelayTimer(OnFocusDelay, uEvent));
+                    }
+                    else
+                    {
+                        uEvent.Invoke();
+                    }
                 }
                 else
                 {
-                    OnFocusOff.Invoke();
+                    if (OnFocusOffDelay > 0)
+                    {
+                        timer = source.StartCoroutine(DelayTimer(OnFocusOffDelay, OnFocusOff));
+                    }
+                    else
+                    {
+                        OnFocusOff.Invoke();
+                    }
                 }
             }
 
             hadFocus = hasFocus;
             lastState = state.CurrentState();
+        }
+
+        private IEnumerator DelayTimer(float time, UnityEvent onEvent)
+        {
+            yield return new WaitForSeconds(time);
+            timer = null;
+            onEvent.Invoke();
         }
     }
 }

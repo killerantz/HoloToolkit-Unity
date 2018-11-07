@@ -24,5 +24,11 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         }
 
         public abstract void OnUpdate(InteractableStates state, Interactable source);
+
+        public virtual void OnKeyword(float value)
+        {
+            // a keyword has been spoken
+            // value is percent of keyword or keywords registered for this Interactable for toggles or gestures
+        }
     }
 }

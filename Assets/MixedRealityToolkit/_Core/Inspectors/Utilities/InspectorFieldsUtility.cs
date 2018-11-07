@@ -143,6 +143,20 @@ namespace Microsoft.MixedReality.Toolkit.Core.Inspectors.Utilities
                 case InspectorField.FieldTypes.Event:
                     // read only, do not update here or a new instance of the event will be created
                     break;
+                case InspectorField.FieldTypes.ObjectArray:
+                    SerializedProperty array = prop.FindPropertyRelative("ArrayValue");
+                    List<UnityEngine.Object> list = (List<UnityEngine.Object>)update;
+                    if (list != null)
+                    {
+                        array.ClearArray();
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            array.InsertArrayElementAtIndex(i);
+                            SerializedProperty newObject = array.GetArrayElementAtIndex(i);
+                            newObject.objectReferenceValue = (UnityEngine.Object)list[i];
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -256,9 +270,34 @@ namespace Microsoft.MixedReality.Toolkit.Core.Inspectors.Utilities
                     SerializedProperty uEvent = prop.FindPropertyRelative("EventValue");
                     EditorGUILayout.PropertyField(uEvent, new GUIContent(label.stringValue, tooltip.stringValue));
                     break;
+                case InspectorField.FieldTypes.ObjectArray:
+                    SerializedProperty array = prop.FindPropertyRelative("ArrayValue");
+                    if (array != null)
+                    {
+                        for (int i = 0; i < array.arraySize; i++)
+                        {
+                            EditorGUILayout.BeginVertical("Box");
+                            EditorGUILayout.BeginHorizontal();
+                            SerializedProperty newObject = array.GetArrayElementAtIndex(i);
+                            EditorGUILayout.PropertyField(newObject, new GUIContent(label.stringValue, tooltip.stringValue), false);
+                            InspectorUIUtility.SmallButton(new GUIContent(InspectorUIUtility.Minus, "Remove an object"), i, RemoveArrayObject, array);
+                            EditorGUILayout.EndHorizontal();
+                            EditorGUILayout.EndVertical();
+                        }
+                        if (GUILayout.Button(new GUIContent("Add Object", "Add an object")))
+                        {
+                            array.InsertArrayElementAtIndex(array.arraySize);
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
+        }
+
+        public static void RemoveArrayObject( int index, SerializedProperty prop = null)
+        {
+            prop.DeleteArrayElementAtIndex(index);
         }
     }
 }

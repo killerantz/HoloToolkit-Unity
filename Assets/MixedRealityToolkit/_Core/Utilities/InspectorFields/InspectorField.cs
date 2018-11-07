@@ -38,7 +38,8 @@ namespace Microsoft.MixedReality.Toolkit.Core.Utilities.InspectorFields
             Curve,
             Quaternion,
             AudioClip,
-            Event
+            Event,
+            ObjectArray
         }
 
         /// <summary>
@@ -145,6 +146,17 @@ namespace Microsoft.MixedReality.Toolkit.Core.Utilities.InspectorFields
                 case InspectorField.FieldTypes.Event:
                     setting.EventValue = (UnityEvent)update;
                     break;
+                case InspectorField.FieldTypes.ObjectArray:
+                    if ((List<UnityEngine.Object>)update != null)
+                    {
+                        setting.ArrayValue = (List<UnityEngine.Object>)update;
+                    }
+                    else
+                    {
+                        setting.ArrayValue =  new List<UnityEngine.Object>();
+                    }
+                    
+                    break;
                 default:
                     break;
             }
@@ -229,6 +241,13 @@ namespace Microsoft.MixedReality.Toolkit.Core.Utilities.InspectorFields
                     break;
                 case InspectorField.FieldTypes.Event:
                     value = setting.EventValue;
+                    break;
+                case InspectorField.FieldTypes.ObjectArray:
+                    if (setting.ArrayValue == null)
+                    {
+                        setting.ArrayValue = new List<UnityEngine.Object>();
+                    }
+                    value = setting.ArrayValue;
                     break;
                 default:
                     break;
