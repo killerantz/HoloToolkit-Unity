@@ -63,6 +63,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
                         for (int j = 0; j < mappings.Length; j++)
                         {
                             count += Mathf.RoundToInt(mappings[j].FloatData);
+                            Debug.Log(mappings[j].InputType);
                         }
 
                         if (count < pointerData[i].ActionScore)

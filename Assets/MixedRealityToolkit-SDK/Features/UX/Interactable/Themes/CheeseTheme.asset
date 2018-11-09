@@ -354,7 +354,7 @@ MonoBehaviour:
       ShaderName: Mixed Reality Toolkit/Standard
     History: []
     Easing:
-      EaseValues: 1
+      Enabled: 1
       Curve:
         serializedVersion: 2
         m_Curve:
