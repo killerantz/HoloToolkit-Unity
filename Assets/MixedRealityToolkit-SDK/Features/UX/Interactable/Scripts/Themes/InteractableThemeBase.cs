@@ -21,11 +21,12 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
         public GameObject Host;
         public Easing Ease;
         public bool Loaded;
+        public bool HasShader;
 
-        private bool hasFirstState = false;
-
-        private int lastState = -1;
-
+        protected MaterialPropertyBlock propertyBlock;
+        protected bool hasFirstState = false;
+        protected int lastState = -1;
+        
         //! find a way to set the default values of the properties, like scale should be Vector3.one
         // these should be custom, per theme
 
@@ -53,6 +54,24 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
 
             Loaded = true;
 
+        }
+
+        public virtual void ApplyQuededValues()
+        {
+            if (propertyBlock != null)
+            {
+                InteractableShaderTheme.SetPropertyBlock(Host, propertyBlock);
+            }
+        }
+
+        public virtual void SetPropertyBlock(MaterialPropertyBlock block)
+        {
+            propertyBlock = block;
+        }
+
+        public virtual MaterialPropertyBlock GetPropertyBlock()
+        {
+            return propertyBlock;
         }
 
         protected float LerpFloat(float s, float e, float t)

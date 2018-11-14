@@ -11,7 +11,6 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
 {
     public class InteractableShaderTheme : InteractableThemeBase
     {
-        protected MaterialPropertyBlock propertyBlock;
         protected List<ShaderProperties> shaderProperties;
 
         public InteractableShaderTheme()
@@ -42,7 +41,14 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
                 }
             }
 
-            propertyBlock = InteractableThemeShaderUtils.GetMaterialPropertyBlock(host, shaderProperties.ToArray());
+            if (propertyBlock == null)
+            {
+                propertyBlock = InteractableThemeShaderUtils.GetMaterialPropertyBlock(host, shaderProperties.ToArray());
+            }
+            else
+            {
+                propertyBlock = InteractableThemeShaderUtils.LoadPropertyBlock(propertyBlock, host, shaderProperties.ToArray());
+            }
         }
 
         public override void SetValue(InteractableThemeProperty property, int index, float percentage)
@@ -69,10 +75,8 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
                 default:
                     break;
             }
-
-            SetPropertyBlock(Host, propertyBlock);
         }
-
+        
         public override InteractableThemePropertyValue GetProperty(InteractableThemeProperty property)
         {
             if (Host == null)
@@ -110,7 +114,10 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
         public static void SetPropertyBlock(GameObject host, MaterialPropertyBlock block)
         {
             Renderer renderer = host.GetComponent<Renderer>();
-            renderer.SetPropertyBlock(block);
+            if (renderer != null)
+            {
+                renderer.SetPropertyBlock(block);
+            }
         }
 
         public static MaterialPropertyBlock SetFloat(MaterialPropertyBlock block, float value, string propId)

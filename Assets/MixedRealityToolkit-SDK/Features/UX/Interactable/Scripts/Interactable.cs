@@ -239,11 +239,17 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable
                 }
             }
 
+            GameObject themeHost = null;
             for (int i = 0; i < runningThemesList.Count; i++)
             {
                 if (runningThemesList[i].Loaded)
                 {
+                    themeHost = runningThemesList[i].Host;
                     runningThemesList[i].OnUpdate(StateManager.CurrentState().ActiveIndex, forceUpdate);
+                    if (i >= runningThemesList.Count - 1 ||  themeHost != runningThemesList[i+1].Host)
+                    {
+                        runningThemesList[i].ApplyQuededValues();
+                    }
                 }
             }
 
@@ -317,12 +323,14 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable
                     ThemeSettings themeSettings = new ThemeSettings();
                     if (Profiles[i].Target != null && theme != null)
                     {
+                        Profiles[i].PropertyBlock = new MaterialPropertyBlock();
+                        InteractableThemeShaderUtils.GetPropertyBlock(Profiles[i].Target);
                         List<InteractableThemePropertySettings> tempSettings = new List<InteractableThemePropertySettings>();
                         for (int n = 0; n < theme.Settings.Count; n++)
                         {
                             InteractableThemePropertySettings settings = theme.Settings[n];
 
-                            settings.Theme = InteractableProfileItem.GetTheme(settings, Profiles[i].Target, lists);
+                            settings.Theme = InteractableProfileItem.GetTheme(settings, Profiles[i].Target, lists, Profiles[i].PropertyBlock);
                             
                             // add themes to theme list based on dimension
                             if (j == dimensionIndex)

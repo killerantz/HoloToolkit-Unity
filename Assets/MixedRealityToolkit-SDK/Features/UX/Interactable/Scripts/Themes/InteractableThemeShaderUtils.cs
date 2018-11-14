@@ -44,9 +44,26 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
         /// <param name="gameObject"></param>
         /// <param name="props"></param>
         /// <returns></returns>
-        public static MaterialPropertyBlock GetMaterialPropertyBlock(GameObject gameObject, ShaderProperties[] props)
+        public static MaterialPropertyBlock GetMaterialPropertyBlock(GameObject gameObject, ShaderProperties[] props, bool apply = true)
         {
             MaterialPropertyBlock materialBlock = GetPropertyBlock(gameObject);
+
+            materialBlock = LoadPropertyBlock(materialBlock, gameObject, props);
+
+            if (apply)
+            {
+                Renderer renderer = gameObject.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    gameObject.GetComponent<Renderer>().SetPropertyBlock(materialBlock);
+                }
+            }
+
+            return materialBlock;
+        }
+
+        public static MaterialPropertyBlock LoadPropertyBlock(MaterialPropertyBlock propertyBlock, GameObject gameObject, ShaderProperties[] props)
+        {
             Renderer renderer = gameObject.GetComponent<Renderer>();
 
             float value;
@@ -62,25 +79,24 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Themes
                         {
                             case ShaderPropertyType.Color:
                                 Color color = material.GetVector(prop.Name);
-                                materialBlock.SetColor(prop.Name, color);
+                                propertyBlock.SetColor(prop.Name, color);
                                 break;
                             case ShaderPropertyType.Float:
                                 value = material.GetFloat(prop.Name);
-                                materialBlock.SetFloat(prop.Name, value);
+                                propertyBlock.SetFloat(prop.Name, value);
                                 break;
                             case ShaderPropertyType.Range:
                                 value = material.GetFloat(prop.Name);
-                                materialBlock.SetFloat(prop.Name, value);
+                                propertyBlock.SetFloat(prop.Name, value);
                                 break;
                             default:
                                 break;
                         }
                     }
                 }
-                gameObject.GetComponent<Renderer>().SetPropertyBlock(materialBlock);
             }
 
-            return materialBlock;
+            return propertyBlock;
         }
 
         /// <summary>

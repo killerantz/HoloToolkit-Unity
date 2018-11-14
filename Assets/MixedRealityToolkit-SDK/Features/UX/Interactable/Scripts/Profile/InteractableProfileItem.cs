@@ -29,6 +29,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Profile
         public GameObject Target;
         public List<Theme> Themes;
         public bool HadDefaultTheme;
+        public MaterialPropertyBlock PropertyBlock;
         
         /// <summary>
         /// Get a list of themes
@@ -66,12 +67,13 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Interactable.Profile
         /// <param name="host"></param>
         /// <param name="lists"></param>
         /// <returns></returns>
-        public static InteractableThemeBase GetTheme(InteractableThemePropertySettings settings, GameObject host, ThemeLists lists)
+        public static InteractableThemeBase GetTheme(InteractableThemePropertySettings settings, GameObject host, ThemeLists lists, MaterialPropertyBlock propertyBlock)
         {
             int index = InspectorField.ReverseLookup(settings.Name, lists.Names.ToArray());
             Type themeType = lists.Types[index];
             InteractableThemeBase theme = (InteractableThemeBase)Activator.CreateInstance(themeType, host);
-            theme.Init(host ,settings);
+            theme.SetPropertyBlock(propertyBlock);
+            theme.Init(host, settings);
             return theme;
         }
 
