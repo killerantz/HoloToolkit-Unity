@@ -75,11 +75,15 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 
             if (ProjectPositionFromSource)
             {
-                // TODO: do not turn this around, but keep offset facing me
+                // TODO: do not turn this around, but keep offset facing me ?
+                // in alignment scenarions we may not want this to face the user, but in raw, for sure.
                 //positionSolver = new InteractablePositionSolver(false, true, true, false);
-                // TODO: handle if two hands start, right now nothing happens, should default to the first hand.
                 // TODO: make sure projection sticks to alignment.
+                // TODO: make sure there is an option for the object to face the user or source!
                 TransformSolver.TransformData data = GestureDataToTransformData(sourceData);
+                if (values.Length > 1) {
+                    data.Position = currentPostion;
+                }
                 targetTransformData = positionSolver.UpdateTarget(data, transform);
             }
             
