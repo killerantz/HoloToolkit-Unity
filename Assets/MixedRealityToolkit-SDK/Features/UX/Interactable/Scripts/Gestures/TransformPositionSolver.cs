@@ -9,6 +9,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 {
     public class InteractablePositionSolver : TransformSolver
     {
+        public enum LookAtSource { None, Camera, Pointer }
         /// <summary>
         /// Lock the x axis if the object is set to face the reference object
         /// </summary>
@@ -22,7 +23,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         /// <summary>
         /// Force the object to always face the reference object
         /// </summary>
-        public bool FaceObject = true;
+        public LookAtSource FaceObject = LookAtSource.None;
 
         /// <summary>
         /// Force the object to keep relative to the reference object's transform.forward
@@ -45,7 +46,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         protected float offsetDistance = 0;
         protected Vector3 normalzedOffsetDirection;
         
-        public InteractablePositionSolver(bool faceObject = true, bool keepStartingOffset = true, bool keepInFront = true, bool keepUpRight = true)
+        public InteractablePositionSolver(LookAtSource faceObject = LookAtSource.None, bool keepStartingOffset = true, bool keepInFront = true, bool keepUpRight = true)
         {
             FaceObject = faceObject;
             KeepStartingOffset = keepStartingOffset;
@@ -102,15 +103,22 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             data.Position = newPosition;
 
             // rotate to face the reference object
-            if (FaceObject)
+            switch (FaceObject)
             {
-                Quaternion forwardRotation = Quaternion.LookRotation(newPosition - sourceTransformData.Position);
-                data.Rotation = forwardRotation;
-            }
-            else
-            {
-                Quaternion newRotation = Quaternion.LookRotation(newPosition - startPosition);
-                data.Rotation = newRotation;
+                case LookAtSource.None:
+                    Quaternion newRotation = Quaternion.LookRotation(newPosition - startPosition);
+                    data.Rotation = newRotation;
+                    break;
+                case LookAtSource.Camera:
+                    Quaternion cameraForward = Quaternion.LookRotation(newPosition - Camera.main.transform.position);
+                    data.Rotation = cameraForward;
+                    break;
+                case LookAtSource.Pointer:
+                    Quaternion forwardRotation = Quaternion.LookRotation(newPosition - sourceTransformData.Position);
+                    data.Rotation = forwardRotation;
+                    break;
+                default:
+                    break;
             }
 
             // lock the x axis

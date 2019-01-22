@@ -105,7 +105,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         /// <summary>
         /// Processed gesture data to drive object manipulation
         /// </summary>
-        public struct GestureData
+        public class GestureData
         {
             public Vector3 Direction;
             public float Distance;
@@ -122,7 +122,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             public float CompoundDistance;
             
             public GestureDataOptions Options;
-            public GestureDataInputValues[] InputValues;
+            public GestureDataInputValues[] InputValues { get; set; }
 
             /// <summary>
             /// Create a Gesture Data
@@ -288,7 +288,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             public void SetCompoundValues(Vector3 direction, float distance)
             {
                 CompoundDirection = direction;
-                CompoundDistance += distance;
+                CompoundDistance = distance;
             }
         }
         
@@ -560,6 +560,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 
                 TwoSouceGestureData.InsertInputValues(inputValues.ToArray());
                 TwoSouceGestureData.SetCompoundValues(compoundDirection, compoundDistance);
+
             }
         }
 
@@ -642,7 +643,6 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
                 {
                     InputData data = new InputData();
                     data.Pointer = pointerData[i].Pointer;
-                    data.GestureData = new GestureData();
                     PointerProperties props = new PointerProperties();
                     props.CamDirection = MainCamera.transform.forward;
                     props.CamPosition = MainCamera.transform.position;
@@ -651,6 +651,8 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
                     props.Ray = getPointerRay(pointerData[i].Pointer);
                     data.StartProperties = props;
                     data.CurrentProperties = props;
+                    GestureDataOptions options = new GestureDataOptions(GestureProcessingType, AlignmentVector, MaxGestureDistance, FlipDirectionOnCameraForward, ClampGesturePercentage);
+                    data.GestureData = new GestureData(data.StartProperties.Position, data.CurrentProperties.Position, props.CamDirection, MainCamera.transform.right, options);
                     list.Add(data);
                 }
             }
@@ -700,7 +702,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             GestureDataOptions options = new GestureDataOptions(dataType, alignmentVector, maxDistance, flipDirecationOnCameraForward, clampPercentage);
 
             GestureData data = new GestureData(start, current, startHeadRay, right, options);
-            
+
             return data;
         }
 

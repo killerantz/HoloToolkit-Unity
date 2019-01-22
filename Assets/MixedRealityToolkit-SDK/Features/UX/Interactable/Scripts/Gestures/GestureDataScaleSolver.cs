@@ -40,7 +40,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             UniformScale = uniformScale;
         }
 
-        protected override TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData)
+        protected override TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false)
         {
             startScale = targetTransformData.Scale;
             startPosition = targetTransformData.Position;
@@ -56,43 +56,18 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             return targetTransformData;
         }
 
-        protected override TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData)
+        protected override TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false)
         {
-            Vector3 direction = sourceData.Direction;
-            float scaleDelta = direction.magnitude - startDistance;
-
-            currentScale = startScale * (1 + scaleDelta) * TransformMultiplier;
-            targetTransformData.Scale = currentScale;
+            float distance = 1 + sourceData.Distance;
+            currentScale = startScale * distance * TransformMultiplier;
             
-            Quaternion gestureOrientation = Quaternion.identity;
-
             if (!UniformScale)
             {
-                InteractableGestureManipulator.GestureDataInputValues[] values = sourceData.InputValues;
-
-                if (values.Length > 1)
-                {
-                    gestureOrientation = InteractableGestureManipulator.GetRelativeRotation(values[0].CurrentPoint, values[1].CurrentPoint);
-                }
-                else
-                {
-                    Vector3 objectStartVector = startPosition - sourceData.StartDirection;
-                    Vector3 objectCurrentVector = startPosition - sourceData.Currrent;
-                    gestureOrientation = Quaternion.FromToRotation(objectStartVector, objectCurrentVector);
-                }
-
-                Quaternion objectOrientation = Quaternion.LookRotation(targetTransformData.Forward, targetTransformData.Up);
-                Quaternion objectDifference = objectOrientation * Quaternion.Inverse(gestureOrientation);
-
-                Quaternion axisOrientation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                Quaternion axisDifference = objectOrientation * Quaternion.Inverse(gestureOrientation);
-
-                Vector3 rotatedDirection = Quaternion.Inverse(objectDifference) * direction;
-                Vector3 rotatedConstraints = Quaternion.Inverse(axisDifference) * AxisContraints;
-                
-                targetTransformData.Scale = startScale + Vector3.Scale(rotatedDirection, rotatedConstraints) * TransformMultiplier;
+                currentScale = startScale + sourceData.Direction * TransformMultiplier;
             }
-            
+
+            targetTransformData.Scale = currentScale;
+
             return targetTransformData;
         }
     }

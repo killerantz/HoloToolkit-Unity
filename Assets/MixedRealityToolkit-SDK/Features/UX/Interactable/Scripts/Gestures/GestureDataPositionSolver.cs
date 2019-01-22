@@ -40,7 +40,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             ProjectPositionFromSource = projectFromSource;
         }
 
-        protected override TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData)
+        protected override TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false)
         {
             startPosition = targetTransformData.Position;
             
@@ -50,7 +50,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             if (ProjectPositionFromSource)
             {
                 // TODO: do not turn this around, but keep offset facing me
-                positionSolver = new InteractablePositionSolver(false, true, true, false);
+                positionSolver = new InteractablePositionSolver(modifier ? InteractablePositionSolver.LookAtSource.Camera : InteractablePositionSolver.LookAtSource.None, true, true, false);
                 TransformSolver.TransformData data = GestureDataToTransformData(sourceData);
                 positionSolver.SetupTarget(data, transform);
             }
@@ -58,7 +58,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             return targetTransformData;
         }
 
-        protected override TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData)
+        protected override TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false)
         {
             Vector3 direction = sourceData.Direction;
             currentPostion = startPosition + direction.normalized * Mathf.Abs(sourceData.Distance) * TransformMultiplier;
@@ -87,7 +87,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
                 targetTransformData = positionSolver.UpdateTarget(data, transform);
             }
             
-            Debug.Log(sourceData.Start + " / " + sourceData.Currrent + " / " + sourceData.Direction + " / " + sourceData.Distance + " / "+ TransformMultiplier + " / " + targetTransformData.Rotation);
+            //Debug.Log(sourceData.Start + " / " + sourceData.Currrent + " / " + sourceData.Direction + " / " + sourceData.Distance + " / "+ TransformMultiplier + " / " + targetTransformData.Rotation);
 
             return targetTransformData;
         }

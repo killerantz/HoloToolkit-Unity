@@ -10,6 +10,12 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
 {
     public class InteractableGestureTransformer : InteractableGestureManipulator
     {
+        //TODO: make sure movement sticks to alignment, especially the projection
+        // TODO: add clipping to max distance or max Rotation?
+        // TODO: make sure receiver handles multiple gesture Manipulators! - had to fix references in code for the list.
+        // what are axis constraints????
+        // force gesture input limit!!!!
+        
         /// <summary>
         /// Should the transform snap back when the gesture is released? > 0 will animate the transform back to start
         /// </summary>
@@ -22,6 +28,9 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         // Position
         public bool Position = true;
         public bool ProjectPosition = false;
+        public bool FaceOnMove = false;
+
+        public float Smoothness = 5.0f;
 
         // Rotation
         public bool Rotate = false;
@@ -76,7 +85,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             if (Position)
             {
                 positionSolver.TransformMultiplier = TransformMultiplier;
-                positionData = positionSolver.SetupTarget(data, transform);
+                positionData = positionSolver.SetupTarget(data, transform, FaceOnMove);
             }
 
             if (Scale)
@@ -116,26 +125,37 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             {
                 data = TwoSouceGestureData;
             }
+            
+            Quaternion newRotation = startRotation;
+
+            float decay = Mathf.Pow(10, -Smoothness);
+            float smoothing = 1 - Mathf.Pow(decay, Time.deltaTime);
 
             if (Position)
             {
                 positionData = positionSolver.UpdateTarget(data, transform);
                 currentPostion = positionData.Position;
-                transform.position = currentPostion;
+                transform.position = Vector3.Lerp(transform.position, currentPostion, smoothing);
+                newRotation = positionData.Rotation;
             }
 
             if (Scale)
             {
                 scaleData = scaleSolver.UpdateTarget(data, transform);
                 currentScale = scaleData.Scale;
-                transform.localScale = currentScale;
+                transform.localScale = Vector3.Lerp(transform.localScale, currentScale, smoothing);
             }
 
             if (Rotate)
             {
                 rotationData = rotationSolver.UpdateTarget(data, transform);
                 currentRotation = rotationData.Rotation;
-                transform.rotation = currentRotation;
+                transform.rotation = Quaternion.Lerp(transform.rotation, currentRotation * newRotation, smoothing);
+            }
+            else
+            {
+                currentRotation = newRotation;
+                transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, smoothing);
             }
          }
 

@@ -36,7 +36,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         /// <param name="sourceTransformData"></param>
         /// <param name="targetTransformData"></param>
         /// <returns></returns>
-        protected abstract TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData);
+        protected abstract TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false);
 
         /// <summary>
         /// Save any cache or start values
@@ -44,12 +44,12 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         /// <param name="sourceTransformData"></param>
         /// <param name="targetTransform"></param>
         /// <returns></returns>
-        public virtual TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, Transform targetTransform)
+        public virtual TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, Transform targetTransform, bool modifier = false)
         {
             TransformSolver.TransformData targetData = TransformSolver.GetTransformData(targetTransform);
             gestureData = sourceData;
             transform = targetTransform;
-            target = SetupTarget(sourceData, targetData);
+            target = SetupTarget(sourceData, targetData, modifier);
             return target;
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         /// <param name="sourceTransformData"></param>
         /// <param name="targetTransformData"></param>
         /// <returns></returns>
-        protected abstract TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData);
+        protected abstract TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false);
 
         /// <summary>
         /// Process based on delta sense last update or start
@@ -68,12 +68,12 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
         /// <param name="sourceTransformData"></param>
         /// <param name="targetTransform"></param>
         /// <returns></returns>
-        public virtual TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, Transform targetTransform)
+        public virtual TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, Transform targetTransform, bool modifier = false)
         {
             TransformSolver.TransformData targetData = TransformSolver.GetTransformData(targetTransform);
             gestureData = sourceData;
             transform = targetTransform;
-            target = UpdateTarget(sourceData, targetData);
+            target = UpdateTarget(sourceData, targetData, modifier);
             return target;
         }
 

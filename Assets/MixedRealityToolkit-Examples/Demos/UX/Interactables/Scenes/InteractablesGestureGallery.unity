@@ -1001,6 +1001,7 @@ MonoBehaviour:
   Manipulator: {fileID: 791206234}
   Pointers:
   - {fileID: 982184083}
+  - {fileID: 1518429042}
 --- !u!1 &584760442
 GameObject:
   m_ObjectHideFlags: 0
@@ -1277,15 +1278,17 @@ MonoBehaviour:
   FlipDirectionOnCameraForward: 0
   GestureProcessingType: 2
   AlignmentVector: {x: 1, y: 0, z: 0}
-  GestureInputLimit: 0
+  GestureInputLimit: 2
   ClampGesturePercentage: 1
   SnapBackTime: 0
   TransformMultiplier: 1
-  Position: 1
-  ProjectPosition: 1
+  Position: 0
+  ProjectPosition: 0
+  FaceOnMove: 0
+  Smoothness: 5
   Rotate: 0
-  Scale: 0
-  UniformScale: 1
+  Scale: 1
+  UniformScale: 0
   AxisConstraints: {x: 1, y: 1, z: 1}
 --- !u!1001 &802010850
 Prefab:

@@ -27,7 +27,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             TransformMultiplier = multiplier;
         }
 
-        protected override TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData)
+        protected override TransformSolver.TransformData SetupTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false)
         {
             startRotation = targetTransformData.Rotation;
             startPosition = targetTransformData.Position;
@@ -51,7 +51,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX
             return targetTransformData;
         }
 
-        protected override TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData)
+        protected override TransformSolver.TransformData UpdateTarget(InteractableGestureManipulator.GestureData sourceData, TransformSolver.TransformData targetTransformData, bool modifier = false)
         {
             Quaternion newRotation = Quaternion.identity;
 
