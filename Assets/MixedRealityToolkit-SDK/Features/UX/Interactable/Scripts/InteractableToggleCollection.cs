@@ -19,6 +19,9 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Iteractable
         [Tooltip("exposed selection changed event")]
         public UnityEvent OnSelectionEvents;
 
+        [Tooltip("Once selected, cannot deselect. false: acts like a radial or tab button")]
+        public bool CanDeselect = false;
+
         private void OnEnable()
         {
             for (int i = 0; i < ToggleList.Length; ++i)
@@ -26,7 +29,7 @@ namespace Microsoft.MixedReality.Toolkit.SDK.UX.Iteractable
                 int itemIndex = i;
                 // add selection event handler to each button
                 ToggleList[i].OnClick.AddListener(() => OnSelection(itemIndex));
-                ToggleList[i].CanDeselect = false;
+                ToggleList[i].CanDeselect = CanDeselect;
             }
             
             OnSelection(CurrentIndex, true);
