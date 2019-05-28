@@ -53,5 +53,9 @@ namespace Microsoft.MixedReality.Toolkit.UI
         {
             // click called
         }
+		public virtual void Reset()
+        {
+            // called when enabled.
+        }						   
     }
 }

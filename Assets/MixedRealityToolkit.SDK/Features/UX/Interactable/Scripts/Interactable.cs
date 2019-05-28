@@ -211,6 +211,12 @@ namespace Microsoft.MixedReality.Toolkit.UI
             {
                 InputSystem.Register(gameObject);
             }
+			ResetThemesAndEvents();
+
+			//!Testing
+            RemovePointers();
+            SetPress(false);
+            SetFocus(false);
         }
 
         private void OnDisable()
@@ -273,6 +279,28 @@ namespace Microsoft.MixedReality.Toolkit.UI
             lastState = StateManager.CurrentState();
         }
 
+		/// <summary>
+        /// Call reset on Themes and Receivers
+        /// They can know if we have been enabled.
+        /// </summary>
+        protected void ResetThemesAndEvents()
+        {
+            for (int i = 0; i < Events.Count; i++)
+            {
+                if (Events[i].Receiver != null)
+                {
+                    Events[i].Receiver.Reset();
+                }
+            }
+
+            for (int i = 0; i < runningThemesList.Count; i++)
+            {
+                if (runningThemesList[i].Loaded)
+                {
+                    runningThemesList[i].Reset();
+                }
+            }
+        } 
         #endregion MonoBehaviorImplimentation
 
         #region InteractableInitiation
@@ -524,6 +552,12 @@ namespace Microsoft.MixedReality.Toolkit.UI
             pointers.Remove(pointer);
         }
 
+
+//!Testing
+		public void RemovePointers()
+        {
+            pointers = new List<IMixedRealityPointer>();
+        }													   
         #endregion PointerManagement
 
         #region MixedRealityFocusChangedHandlers

@@ -26,7 +26,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
         private bool hasFirstState = false;
 
-        private int lastState = -1;
+        protected int lastState { get; private set; } = -1;
 
         //! find a way to set the default values of the properties, like scale should be Vector3.one
         // these should be custom, per theme
@@ -78,6 +78,10 @@ namespace Microsoft.MixedReality.Toolkit.UI
             return newEase;
         }
 
+		public virtual void Reset()
+        {
+            // called when Interactable is enabled
+        }						   
         public virtual void OnUpdate(int state, bool force = false)
         {
             if (state != lastState || force)
