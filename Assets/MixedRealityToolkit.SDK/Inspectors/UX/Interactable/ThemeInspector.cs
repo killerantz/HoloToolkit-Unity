@@ -31,16 +31,20 @@ namespace Microsoft.MixedReality.Toolkit.UI
         protected GUIStyle boxStyle;
         protected bool layoutComplete = false;
 
+        protected bool enabling = false;
+
         protected virtual void OnEnable()
         {
             settings = serializedObject.FindProperty("Settings");
             SetupThemeOptions();
+            enabling = true;
         }
 
         public override void OnInspectorGUI()
         {
             //RenderBaseInspector()
             RenderCustomInspector();
+            enabling = false;
         }
 
         protected virtual void RenderBaseInspector()
@@ -85,8 +89,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
             if (layoutComplete || Event.current.type == EventType.Layout)
             {
 
-                RenderThemeSettings(settings, null, themeOptions, null, new int[] { 0, -1, 0 }, GetStates());
-
+                RenderThemeSettings(settings, null, themeOptions, null, new int[] { 0, -1, 0 }, GetStates(), enabling);
+                
                 InspectorUIUtility.FlexButton(new GUIContent("+", "Add Theme Property"), new int[] { 0 }, AddThemeProperty);
 
                 // render a list of all the properties from the theme based on state
@@ -229,6 +233,34 @@ namespace Microsoft.MixedReality.Toolkit.UI
         protected static void RemoveThemePropertySettings(SerializedProperty themeSettings, int index)
         {
             themeSettings.DeleteArrayElementAtIndex(index);
+        }
+
+        public static bool ValidateThemeProperty(SerializedProperty propSettings, SerializedProperty target)
+        {
+            SerializedProperty className = propSettings.FindPropertyRelative("Name");
+
+            InteractableTypesContainer themeTypes = InteractableProfileItem.GetThemeTypes();
+
+            // get class value types
+            if (!String.IsNullOrEmpty(className.stringValue))
+            {
+                int propIndex = InspectorUIUtility.ReverseLookup(className.stringValue, themeTypes.ClassNames);
+                GameObject renderHost = null;
+                if (target != null)
+                {
+                    renderHost = (GameObject)target.objectReferenceValue;
+                }
+
+                InteractableThemeBase themeBase = (InteractableThemeBase)Activator.CreateInstance(themeTypes.Types[propIndex], renderHost);
+                List<InteractableThemeProperty> properties = themeBase.ThemeProperties;
+
+                SerializedProperty sProps = propSettings.FindPropertyRelative("Properties");
+                SerializedProperty history = propSettings.FindPropertyRelative("History");
+                
+                return sProps.arraySize == properties.Count;
+
+            }
+                return false;
         }
 
         public static SerializedProperty ChangeThemeProperty(int index, SerializedProperty themeSettings, SerializedProperty target, State[] states, bool isNew = false)
@@ -420,7 +452,6 @@ namespace Microsoft.MixedReality.Toolkit.UI
                             names.stringValue = shaderProps[n].Name;
                             
                         }
-                        Debug.Log(shaderNames.arraySize + " / " + propId.intValue);
                     }
                 }
 
@@ -756,7 +787,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
             return copyTo;
         }
 
-        public static void RenderThemeSettings(SerializedProperty themeSettings, SerializedObject themeObj, InteractableTypesContainer themeOptions, SerializedProperty gameObject, int[] listIndex, State[] states)
+        public static void RenderThemeSettings(SerializedProperty themeSettings, SerializedObject themeObj, InteractableTypesContainer themeOptions, SerializedProperty gameObject, int[] listIndex, State[] states, bool validate = false)
         {
             GUIStyle box = InspectorUIUtility.Box(0);
             if (themeObj != null)
@@ -798,7 +829,16 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
                 EditorGUILayout.EndHorizontal();
 
-                if (id != newId)
+                // check for differences in the theme and the theme settings, upgrade path for edited theme.
+                SerializedProperty themePropItem = themeSettings.GetArrayElementAtIndex(n);
+                bool validTheme = true;
+
+                if (validate)
+                {
+                    validTheme = ValidateThemeProperty(themePropItem, gameObject);
+                }
+                
+                if (id != newId || !validTheme)
                 {
                     SerializedProperty assemblyQualifiedName = settingsItem.FindPropertyRelative("AssemblyQualifiedName");
                     className.stringValue = themeOptions.ClassNames[newId];

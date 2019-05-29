@@ -18,7 +18,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
         protected SerializedProperty profileList;
         protected static bool showProfiles;
         protected string prefKey = "InteractableInspectorProfiles";
-        protected bool enabled = false;
+        protected bool enabling = false;
 
         protected InteractableTypesContainer eventOptions;
         protected InteractableTypesContainer themeOptions;
@@ -50,7 +50,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
             SetupEventOptions();
             SetupThemeOptions();
 
-            enabled = true;
+            enabling = true;
         }
 
         protected virtual void RenderBaseInspector()
@@ -71,6 +71,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
             //RenderBaseInspector()
             RenderCustomInspector();
+            enabling = false;
         }
 
         public virtual void RenderCustomInspector()
@@ -344,7 +345,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
                                 State[] iStates = GetStates();
 
-                                ThemeInspector.RenderThemeSettings(themeObjSettings, themeObj, themeOptions, gameObject, location, iStates);
+                                ThemeInspector.RenderThemeSettings(themeObjSettings, themeObj, themeOptions, gameObject, location, iStates, enabling);
 
                                 InspectorUIUtility.FlexButton(new GUIContent("+", "Add Theme Property"), location, AddThemeProperty);
 

@@ -205,6 +205,9 @@ namespace Microsoft.MixedReality.Toolkit.UI
             SetupStates();
         }
 
+        //! testing
+        public int ClickCount = 0;
+
         private void OnEnable()
         {
             if (IsGlobal)
@@ -883,6 +886,9 @@ namespace Microsoft.MixedReality.Toolkit.UI
         protected void SendOnClick(IMixedRealityPointer pointer)
         {
             OnClick.Invoke();
+
+            //! testing
+            ClickCount++;
 
             for (int i = 0; i < Events.Count; i++)
             {
