@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Collider))]
 public class SafeArea : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
-        
+        SafeAreaManager.SafeArea = this;
     }
 
-    // Update is called once per frame
-    void Update()
+    public bool CheckCollision(Bounds bounds)
     {
-        
+        Bounds myBounds = GetComponent<Collider>().bounds;
+        return myBounds.Intersects(bounds);
     }
 }

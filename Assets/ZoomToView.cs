@@ -18,6 +18,8 @@ public class ZoomToView : MonoBehaviour
 
     private ZoomReturn objectManager;
     private GameObject safeArea;
+    private bool hadZoom = false;
+    private bool isZooming = false;
 
     public void StartZoom(GameObject interactable)
     {
@@ -49,38 +51,84 @@ public class ZoomToView : MonoBehaviour
             cachedLocalRotation = ObjectToZoom.transform.localRotation;
             objectParent = ObjectToZoom.transform.parent;
             ObjectToZoom.parent = zoomedObject.transform;
+
+            ZoomReturn zoom = zoomedObject.GetComponent<ZoomReturn>();
+            zoom.ZoomReference = this;
+            zoom.EnableCollider(true);
+            hadZoom = true;
+            isZooming = true;
         }
     }
 
     public void StopZoom()
     {
-        if(zoomedObject != null)
+        if(zoomedObject != null && !HasCollision())
         {
             ObjectToZoom.transform.parent = objectParent;
-            //ObjectToZoom.transform.localPosition = cachedLocalPosition;
             ObjectToZoom.transform.localRotation = cachedLocalRotation;
+            ObjectToZoom.transform.localPosition = cachedLocalPosition;
             Destroy(zoomedObject);
             zoomedObject = null;
         }
+        else
+        {
+            ZoomReturn zoom = GetZoom();
+            if(zoom != null)
+            {
+                zoom.EnableInteractable(true);
+            }
+        }
+
+        isZooming = false;
+    }
+
+    private ZoomReturn GetZoom()
+    {
+        ZoomReturn zoom = null;
+        if (zoomedObject != null)
+        {
+            zoom = zoomedObject.GetComponent<ZoomReturn>();
+        }
+
+        return zoom;
+    }
+
+    private bool HasCollision()
+    {
+        bool hasCollision = false;
+        ZoomReturn zoom = GetZoom();
+        if (zoom != null)
+        {
+            hasCollision = zoom.HasCollision;
+        }
+
+        return hasCollision;
     }
 
     private void Update()
     {
         float decay = Mathf.Pow(10, -ZoomSpeed);
         float lerpSpeed = 1 - Mathf.Pow(decay, Time.deltaTime);
-
-
-        if (zoomedObject != null && currentPointer != null)
+        
+        if (zoomedObject != null && currentPointer != null && isZooming)
         {
             zoomedObject.transform.position = currentPointer.Position;
             zoomedObject.transform.rotation = currentPointer.Rotation;
             
-
             ObjectToZoom.transform.localPosition = Vector3.Lerp(ObjectToZoom.transform.localPosition, Vector3.zero, lerpSpeed);
+            // lerp rotation?
         }
         else
         {
-            ObjectToZoom.transform.localPosition = Vector3.Lerp(ObjectToZoom.transform.localPosition, cachedLocalPosition, lerpSpeed);
+            if (hadZoom && !HasCollision())
+            {
+                ObjectToZoom.transform.localPosition = Vector3.Lerp(ObjectToZoom.transform.localPosition, cachedLocalPosition, lerpSpeed);
+                // Add rotation over time
+                if (ObjectToZoom.transform.localPosition == cachedLocalPosition)
+                {
+                    hadZoom = false;
+                }
+            }
         }
     }
 }
