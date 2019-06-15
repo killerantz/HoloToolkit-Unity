@@ -255,6 +255,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
             {
                 ResetBaseStates();
             }
+
+            ResetThemesAndEvents();
         }
 
         private void OnDisable()
@@ -382,6 +384,29 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
                 profileSettings.ThemeSettings = themeSettingsList;
                 runningProfileSettings.Add(profileSettings);
+            }
+        }
+
+        /// <summary>
+        /// Call reset on Themes and Receivers
+        /// They can know if we have been enabled.
+        /// </summary>
+        protected void ResetThemesAndEvents()
+        {
+            for (int i = 0; i < Events.Count; i++)
+            {
+                if (Events[i].Receiver != null)
+                {
+                    Events[i].Receiver.Reset();
+                }
+            }
+
+            for (int i = 0; i < runningThemesList.Count; i++)
+            {
+                if (runningThemesList[i].Loaded)
+                {
+                    runningThemesList[i].Reset();
+                }
             }
         }
 

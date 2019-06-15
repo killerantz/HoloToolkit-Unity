@@ -26,10 +26,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
         private bool hasFirstState = false;
 
-        private int lastState = -1;
-
-        //! find a way to set the default values of the properties, like scale should be Vector3.one
-        // these should be custom, per theme
+        protected int lastState { get; private set; } = -1;
 
         public abstract void SetValue(InteractableThemeProperty property, int index, float percentage);
 
@@ -83,6 +80,14 @@ namespace Microsoft.MixedReality.Toolkit.UI
             newEase.LerpTime = ease.LerpTime;
 
             return newEase;
+        }
+
+        /// <summary>
+        /// A way for Interactable to let themes and events know Interactable was enabled again.
+        /// </summary>
+        public virtual void Reset()
+        {
+            // called when Interactable is enabled.
         }
 
         public virtual void OnUpdate(int state, Interactable source, bool force = false)

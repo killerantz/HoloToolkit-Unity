@@ -11,6 +11,15 @@ namespace Microsoft.MixedReality.Toolkit.UI
     {
         private AudioSource audioSource;
 
+        private int stateChangeCount;
+        private int[] playCounts = null;
+        private bool isForced = false;
+        private int clickCount = 0;
+
+        public float VolumeOverride = 1;
+
+        private bool inited = false;
+
         public InteractableAudioTheme()
         {
             Types = new Type[] { typeof(Transform) };
@@ -19,10 +28,33 @@ namespace Microsoft.MixedReality.Toolkit.UI
             ThemeProperties.Add(
                 new InteractableThemeProperty()
                 {
-                    Name = "Audio",
+                    Name = "Audio Clip",
                     Type = InteractableThemePropertyValueTypes.AudioClip,
                     Values = new List<InteractableThemePropertyValue>(),
                     Default = new InteractableThemePropertyValue() { AudioClip = null }
+                });
+            ThemeProperties.Add(
+                new InteractableThemeProperty()
+                {
+                    Name = "Audio Play Limit",
+                    Tooltip = "The times audio can play after interaction started, will reset when interaction ends",
+                    Type = InteractableThemePropertyValueTypes.Int,
+                    Values = new List<InteractableThemePropertyValue>(),
+                    Default = new InteractableThemePropertyValue() { Int = 0 }
+                });
+
+            CustomSettings.Add(
+                new InteractableCustomSetting()
+                {
+                    Name = "Volume",
+                    Type = InteractableThemePropertyValueTypes.Float,
+                    Value = new InteractableThemePropertyValue() { Float = 1 }
+                });
+            CustomSettings.Add(
+                new InteractableCustomSetting()
+                {
+                    Name = "OnClick Clip",
+                    Type = InteractableThemePropertyValueTypes.AudioClip
                 });
         }
 
@@ -30,6 +62,47 @@ namespace Microsoft.MixedReality.Toolkit.UI
         {
             base.Init(host, settings);
             audioSource = Host.GetComponentInChildren<AudioSource>();
+
+            if (audioSource == null)
+            {
+                SetupAudioSource(Host);
+                ConfigureAudioSource();
+            }
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            if (stateChangeCount > 1)
+            {
+                stateChangeCount = 0;
+            }
+        }
+
+        public override void OnUpdate(int state, Interactable source, bool force = false)
+        {
+            isForced = force;
+            if (!inited)
+            {
+                clickCount = source.ClickCount;
+                inited = true;
+            }
+
+            base.OnUpdate(state, source, force);
+            isForced = false;
+
+            if (source.ClickCount != clickCount)
+            {
+                if (CustomSettings[1].Value.AudioClip != null)
+                {
+                    PlayAudioClip(CustomSettings[1].Value.AudioClip);
+                }
+                clickCount = source.ClickCount;
+
+            }
+
+            VolumeOverride = CustomSettings[0].Value.Float;
+
         }
 
         public override InteractableThemePropertyValue GetProperty(InteractableThemeProperty property)
@@ -45,13 +118,76 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
         public override void SetValue(InteractableThemeProperty property, int index, float percentage)
         {
+            if (property == ThemeProperties[0])
+            {
+                if (SetupAudioSource(Host))
+                {
+                    ConfigureAudioSource();
+                }
+
+                bool playSound = false;
+                if (playCounts == null || index == 0)
+                {
+                    playCounts = new int[property.Values.Count];
+                    playSound = true;
+                }
+                else
+                {
+                    int playLimit = ThemeProperties[1].Values[index].Int;
+                    playSound = playLimit == 0 || playLimit > playCounts[index];
+                }
+
+                if (ShouldPlay(index) && playSound && !isForced)
+                {
+                    PlayAudioClip(property.Values[index].AudioClip);
+                    playCounts[index]++;
+                }
+
+                if (lastState > -1 && lastState != index)
+                {
+                    stateChangeCount++;
+                }
+            }
+        }
+
+        private void PlayAudioClip(AudioClip clip)
+        {
+            if (clip != null)
+            {
+                audioSource.volume = VolumeOverride;
+                audioSource.clip = clip;
+                audioSource.Play();
+            }
+        }
+
+        private bool SetupAudioSource(GameObject host)
+        {
             if (audioSource == null)
             {
-                audioSource = Host.AddComponent<AudioSource>();
+                audioSource = host.AddComponent<AudioSource>();
+                return true;
             }
 
-            audioSource.clip = property.Values[index].AudioClip;
-            audioSource.Play();
+            return false;
+        }
+
+        private void ConfigureAudioSource()
+        {
+            VolumeOverride = Mathf.Clamp01(VolumeOverride);
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1;
+            audioSource.volume = VolumeOverride;
+        }
+
+        private bool ShouldPlay(int state)
+        {
+
+            if (stateChangeCount > 0 || (state != lastState && lastState > -1 && state > 0))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

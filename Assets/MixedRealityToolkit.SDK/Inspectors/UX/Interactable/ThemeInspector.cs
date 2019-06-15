@@ -30,17 +30,20 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
         protected GUIStyle boxStyle;
         protected bool layoutComplete = false;
+        protected bool enabling = false;
 
         protected virtual void OnEnable()
         {
             settings = serializedObject.FindProperty("Settings");
             SetupThemeOptions();
+            enabling = true;
         }
 
         public override void OnInspectorGUI()
         {
             //RenderBaseInspector()
             RenderCustomInspector();
+            enabling = false;
         }
 
         protected virtual void RenderBaseInspector()
@@ -84,8 +87,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
             if (layoutComplete || Event.current.type == EventType.Layout)
             {
-
-                RenderThemeSettings(settings, null, themeOptions, null, new int[] { 0, -1, 0 }, GetStates());
+                RenderThemeSettings(settings, null, themeOptions, null, new int[] { 0, -1, 0 }, GetStates(), enabling);
 
                 InspectorUIUtility.FlexButton(new GUIContent("+", "Add Theme Property"), new int[] { 0 }, AddThemeProperty);
 
@@ -231,6 +233,43 @@ namespace Microsoft.MixedReality.Toolkit.UI
             themeSettings.DeleteArrayElementAtIndex(index);
         }
 
+        /// <summary>
+        /// Check if the theme has been updated sense the last time it was enabled.
+        /// Auto updates for theme development when adding properties
+        /// </summary>
+        /// <param name="propSettings"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static bool ValidateThemeProperty(SerializedProperty propSettings, SerializedProperty target)
+        {
+            SerializedProperty className = propSettings.FindPropertyRelative("Name");
+
+            InteractableTypesContainer themeTypes = InteractableProfileItem.GetThemeTypes();
+
+            // get class value types
+            if (!String.IsNullOrEmpty(className.stringValue))
+            {
+                int propIndex = InspectorUIUtility.ReverseLookup(className.stringValue, themeTypes.ClassNames);
+                GameObject renderHost = null;
+                if (target != null)
+                {
+                    renderHost = (GameObject)target.objectReferenceValue;
+                }
+
+                InteractableThemeBase themeBase = (InteractableThemeBase)Activator.CreateInstance(themeTypes.Types[propIndex], renderHost);
+                List<InteractableThemeProperty> properties = themeBase.ThemeProperties;
+                List<InteractableCustomSetting> customSettings = themeBase.CustomSettings;
+
+                SerializedProperty sProps = propSettings.FindPropertyRelative("Properties");
+                SerializedProperty history = propSettings.FindPropertyRelative("History");
+                SerializedProperty sCustom = propSettings.FindPropertyRelative("CustomSettings");
+
+                return sProps.arraySize == properties.Count && customSettings.Count == sCustom.arraySize;
+
+            }
+            return false;
+        }
+
         public static SerializedProperty ChangeThemeProperty(int index, SerializedProperty themeSettings, SerializedProperty target, State[] states, bool isNew = false)
         {
             SerializedProperty settingsItem = themeSettings.GetArrayElementAtIndex(index);
@@ -300,6 +339,21 @@ namespace Microsoft.MixedReality.Toolkit.UI
                 {
                     sProps.ClearArray();
                     custom.ClearArray();
+
+                    for (int i = 0; i < customSettings.Count; i++)
+                    {
+                        custom.InsertArrayElementAtIndex(custom.arraySize);
+                        SerializedProperty item = custom.GetArrayElementAtIndex(i);
+                        SerializedProperty name = item.FindPropertyRelative("Name");
+                        SerializedProperty type = item.FindPropertyRelative("Type");
+                        SerializedProperty value = item.FindPropertyRelative("Value");
+                        SerializedProperty tooltip = item.FindPropertyRelative("Tooltip");
+
+                        name.stringValue = properties[i].Name;
+                        type.intValue = (int)properties[i].Type;
+                        tooltip.stringValue = properties[i].Tooltip;
+                        SerializeThemeValues(customSettings[i].Value, value, type.intValue);
+                    }
                 }
                 else
                 {
@@ -307,7 +361,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
                     sProps = CopyPropertiesFromHistory(sProps, properties, history, out history);
                     custom = CopyCustomHistory(custom, customSettings, customHistory, out customHistory);
                 }
-
+                
                 for (int i = 0; i < properties.Count; i++)
                 {
                     bool newItem = false;
@@ -321,9 +375,11 @@ namespace Microsoft.MixedReality.Toolkit.UI
                     SerializedProperty name = item.FindPropertyRelative("Name");
                     SerializedProperty type = item.FindPropertyRelative("Type");
                     SerializedProperty values = item.FindPropertyRelative("Values");
+                    SerializedProperty tooltip = item.FindPropertyRelative("Tooltip");
 
                     name.stringValue = properties[i].Name;
                     type.intValue = (int)properties[i].Type;
+                    tooltip.stringValue = properties[i].Tooltip;
 
                     int valueCount = states.Length;
 
@@ -499,6 +555,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
                 newName.stringValue = newCustomSettings[i].Name;
                 newType.intValue = (int)newCustomSettings[i].Type;
 
+                bool hasHistory = false;
                 if (customHistory != null)
                 {
                     for (int j = 0; j < customHistory.arraySize; j++)
@@ -511,8 +568,15 @@ namespace Microsoft.MixedReality.Toolkit.UI
                         if (name.stringValue == newName.stringValue && type.intValue == newType.intValue)
                         {
                             newValue = CopyThemeValues(value, newValue, newType.intValue);
+                            hasHistory = true;
                         }
                     }
+                }
+
+                // history does not exist to set default value if available
+                if (!hasHistory && newCustomSettings[i].Value != null)
+                {
+                    newValue = SerializeThemeValues(newCustomSettings[i].Value, newValue, newType.intValue);
                 }
             }
 
@@ -627,15 +691,18 @@ namespace Microsoft.MixedReality.Toolkit.UI
             SerializedProperty newType = copyTo.FindPropertyRelative("Type");
             SerializedProperty newValues = copyTo.FindPropertyRelative("Values");
             SerializedProperty newPropId = copyTo.FindPropertyRelative("PropId");
+            SerializedProperty newTooltip = copyTo.FindPropertyRelative("Tooltip");
 
             SerializedProperty oldName = copyFrom.FindPropertyRelative("Name");
             SerializedProperty oldType = copyFrom.FindPropertyRelative("Type");
             SerializedProperty oldValues = copyFrom.FindPropertyRelative("Values");
             SerializedProperty oldPropId = copyFrom.FindPropertyRelative("PropId");
+            SerializedProperty oldTooltip = copyFrom.FindPropertyRelative("Tooltip");
 
             newName.stringValue = oldName.stringValue;
             newType.intValue = oldType.intValue;
             newPropId.intValue = oldPropId.intValue;
+            newTooltip.stringValue = oldTooltip.stringValue;
 
             newValues.ClearArray();
 
@@ -661,13 +728,16 @@ namespace Microsoft.MixedReality.Toolkit.UI
             SerializedProperty newName = copyTo.FindPropertyRelative("Name");
             SerializedProperty newType = copyTo.FindPropertyRelative("Type");
             SerializedProperty newValue = copyTo.FindPropertyRelative("Value");
+            SerializedProperty newTooltip = copyTo.FindPropertyRelative("Tooltip");
 
             SerializedProperty oldName = copyFrom.FindPropertyRelative("Name");
             SerializedProperty oldType = copyFrom.FindPropertyRelative("Type");
             SerializedProperty oldValue = copyFrom.FindPropertyRelative("Value");
+            SerializedProperty oldTooltip = copyFrom.FindPropertyRelative("Tooltip");
 
             newName.stringValue = oldName.stringValue;
             newType.intValue = oldType.intValue;
+            newTooltip.stringValue = oldTooltip.stringValue;
 
             newValue = CopyThemeValues(oldValue, newValue, newType.intValue);
 
@@ -874,7 +944,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
             return copyTo;
         }
 
-        public static void RenderThemeSettings(SerializedProperty themeSettings, SerializedObject themeObj, InteractableTypesContainer themeOptions, SerializedProperty gameObject, int[] listIndex, State[] states)
+        public static void RenderThemeSettings(SerializedProperty themeSettings, SerializedObject themeObj, InteractableTypesContainer themeOptions, SerializedProperty gameObject, int[] listIndex, State[] states, bool validate = false)
         {
             GUIStyle box = InspectorUIUtility.Box(0);
             if (themeObj != null)
@@ -916,14 +986,18 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
                 EditorGUILayout.EndHorizontal();
 
-                if (id != newId)
+                // check for differences in the theme and the theme settings, upgrade path for edited theme.
+                SerializedProperty themePropItem = themeSettings.GetArrayElementAtIndex(n);
+                bool validTheme = true;
+                validTheme = ValidateThemeProperty(themePropItem, gameObject);
+
+                if (id != newId || !validTheme)
                 {
                     SerializedProperty assemblyQualifiedName = settingsItem.FindPropertyRelative("AssemblyQualifiedName");
                     className.stringValue = themeOptions.ClassNames[newId];
                     assemblyQualifiedName.stringValue = themeOptions.AssemblyQualifiedNames[newId];
 
                     // add the themeOjects if in a profile?
-                    //themeObj = ChangeThemeProperty(n, themeObj, gameObject);
                     themeSettings = ChangeThemeProperty(n, themeSettings, gameObject, states);
                 }
 
@@ -1044,9 +1118,10 @@ namespace Microsoft.MixedReality.Toolkit.UI
                     SerializedProperty name = item.FindPropertyRelative("Name");
                     SerializedProperty propType = item.FindPropertyRelative("Type");
                     SerializedProperty value = item.FindPropertyRelative("Value");
+                    SerializedProperty tooltip = item.FindPropertyRelative("Tooltip");
                     InteractableThemePropertyValueTypes type = (InteractableThemePropertyValueTypes)propType.intValue;
 
-                    RenderValue(value, name.stringValue, name.stringValue, type);
+                    RenderValue(value, name.stringValue, name.stringValue, type, tooltip.stringValue);
                 }
 
                 EditorGUI.indentLevel = indentOnSectionStart;
@@ -1151,7 +1226,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
         /// <param name="name"></param>
         /// <param name="propName"></param>
         /// <param name="type"></param>
-        public static void RenderValue(SerializedProperty item, string name, string propName, InteractableThemePropertyValueTypes type)
+        public static void RenderValue(SerializedProperty item, string name, string propName, InteractableThemePropertyValueTypes type, string tooltip)
         {
             SerializedProperty floatValue = item.FindPropertyRelative("Float");
             SerializedProperty vector2Value = item.FindPropertyRelative("Vector2");
@@ -1160,68 +1235,68 @@ namespace Microsoft.MixedReality.Toolkit.UI
             switch (type)
             {
                 case InteractableThemePropertyValueTypes.Float:
-                    floatValue.floatValue = EditorGUILayout.FloatField(new GUIContent(name, ""), floatValue.floatValue);
+                    floatValue.floatValue = EditorGUILayout.FloatField(new GUIContent(name, tooltip), floatValue.floatValue);
                     break;
                 case InteractableThemePropertyValueTypes.Int:
                     SerializedProperty intValue = item.FindPropertyRelative("Int");
-                    intValue.intValue = EditorGUILayout.IntField(new GUIContent(name, ""), intValue.intValue);
+                    intValue.intValue = EditorGUILayout.IntField(new GUIContent(name, tooltip), intValue.intValue);
                     break;
                 case InteractableThemePropertyValueTypes.Color:
                     SerializedProperty colorValue = item.FindPropertyRelative("Color");
-                    colorValue.colorValue = EditorGUILayout.ColorField(new GUIContent(propName, propName), colorValue.colorValue);
+                    colorValue.colorValue = EditorGUILayout.ColorField(new GUIContent(propName, tooltip), colorValue.colorValue);
                     break;
                 case InteractableThemePropertyValueTypes.ShaderFloat:
-                    floatValue.floatValue = EditorGUILayout.FloatField(new GUIContent(propName, propName), floatValue.floatValue);
+                    floatValue.floatValue = EditorGUILayout.FloatField(new GUIContent(propName, tooltip), floatValue.floatValue);
                     break;
                 case InteractableThemePropertyValueTypes.shaderRange:
-                    vector2Value.vector2Value = EditorGUILayout.Vector2Field(new GUIContent(propName, propName), vector2Value.vector2Value);
+                    vector2Value.vector2Value = EditorGUILayout.Vector2Field(new GUIContent(propName, tooltip), vector2Value.vector2Value);
                     break;
                 case InteractableThemePropertyValueTypes.Vector2:
-                    vector2Value.vector2Value = EditorGUILayout.Vector2Field(new GUIContent(name, ""), vector2Value.vector2Value);
+                    vector2Value.vector2Value = EditorGUILayout.Vector2Field(new GUIContent(name, tooltip), vector2Value.vector2Value);
                     break;
                 case InteractableThemePropertyValueTypes.Vector3:
                     SerializedProperty vector3Value = item.FindPropertyRelative("Vector3");
-                    vector3Value.vector3Value = EditorGUILayout.Vector3Field(new GUIContent(name, ""), vector3Value.vector3Value);
+                    vector3Value.vector3Value = EditorGUILayout.Vector3Field(new GUIContent(name, tooltip), vector3Value.vector3Value);
                     break;
                 case InteractableThemePropertyValueTypes.Vector4:
                     SerializedProperty vector4Value = item.FindPropertyRelative("Vector4");
-                    vector4Value.vector4Value = EditorGUILayout.Vector4Field(new GUIContent(name, ""), vector4Value.vector4Value);
+                    vector4Value.vector4Value = EditorGUILayout.Vector4Field(new GUIContent(name, tooltip), vector4Value.vector4Value);
                     break;
                 case InteractableThemePropertyValueTypes.Quaternion:
                     SerializedProperty quaternionValue = item.FindPropertyRelative("Quaternion");
                     Vector4 vect4 = new Vector4(quaternionValue.quaternionValue.x, quaternionValue.quaternionValue.y, quaternionValue.quaternionValue.z, quaternionValue.quaternionValue.w);
-                    vect4 = EditorGUILayout.Vector4Field(new GUIContent(name, ""), vect4);
+                    vect4 = EditorGUILayout.Vector4Field(new GUIContent(name, tooltip), vect4);
                     quaternionValue.quaternionValue = new Quaternion(vect4.x, vect4.y, vect4.z, vect4.w);
                     break;
                 case InteractableThemePropertyValueTypes.Texture:
                     SerializedProperty texture = item.FindPropertyRelative("Texture");
-                    EditorGUILayout.PropertyField(texture, new GUIContent(name, ""), false);
+                    EditorGUILayout.PropertyField(texture, new GUIContent(name, tooltip), false);
                     break;
                 case InteractableThemePropertyValueTypes.Material:
                     SerializedProperty material = item.FindPropertyRelative("Material");
-                    EditorGUILayout.PropertyField(material, new GUIContent(name, ""), false);
+                    EditorGUILayout.PropertyField(material, new GUIContent(name, tooltip), false);
                     break;
                 case InteractableThemePropertyValueTypes.AudioClip:
                     SerializedProperty audio = item.FindPropertyRelative("AudioClip");
-                    EditorGUILayout.PropertyField(audio, new GUIContent(name, ""), false);
+                    EditorGUILayout.PropertyField(audio, new GUIContent(name, tooltip), false);
                     break;
                 case InteractableThemePropertyValueTypes.Animaiton:
                     SerializedProperty animation = item.FindPropertyRelative("Animation");
-                    EditorGUILayout.PropertyField(animation, new GUIContent(name, ""), false);
+                    EditorGUILayout.PropertyField(animation, new GUIContent(name, tooltip), false);
                     break;
                 case InteractableThemePropertyValueTypes.GameObject:
                     SerializedProperty gameObjectValue = item.FindPropertyRelative("GameObject");
-                    EditorGUILayout.PropertyField(gameObjectValue, new GUIContent(name, ""), false);
+                    EditorGUILayout.PropertyField(gameObjectValue, new GUIContent(name, tooltip), false);
                     break;
                 case InteractableThemePropertyValueTypes.String:
-                    stringValue.stringValue = EditorGUILayout.TextField(new GUIContent(name, ""), stringValue.stringValue);
+                    stringValue.stringValue = EditorGUILayout.TextField(new GUIContent(name, tooltip), stringValue.stringValue);
                     break;
                 case InteractableThemePropertyValueTypes.Bool:
                     SerializedProperty boolValue = item.FindPropertyRelative("Bool");
-                    boolValue.boolValue = EditorGUILayout.Toggle(new GUIContent(name, ""), boolValue.boolValue);
+                    boolValue.boolValue = EditorGUILayout.Toggle(new GUIContent(name, tooltip), boolValue.boolValue);
                     break;
                 case InteractableThemePropertyValueTypes.AnimatorTrigger:
-                    stringValue.stringValue = EditorGUILayout.TextField(new GUIContent(name, ""), stringValue.stringValue);
+                    stringValue.stringValue = EditorGUILayout.TextField(new GUIContent(name, tooltip), stringValue.stringValue);
                     break;
                 default:
                     break;
@@ -1253,6 +1328,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
                         SerializedProperty values = propertyItem.FindPropertyRelative("Values");
                         SerializedProperty shaderNames = propertyItem.FindPropertyRelative("ShaderOptionNames");
                         SerializedProperty propId = propertyItem.FindPropertyRelative("PropId");
+                        SerializedProperty tooltip = propertyItem.FindPropertyRelative("Tooltip");
 
                         string shaderPropName = "Shader";
 
@@ -1269,7 +1345,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
                         }
 
                         SerializedProperty item = values.GetArrayElementAtIndex(n);
-                        RenderValue(item, name.stringValue, shaderPropName, (InteractableThemePropertyValueTypes)type.intValue);
+                        RenderValue(item, name.stringValue, shaderPropName, (InteractableThemePropertyValueTypes)type.intValue, tooltip.stringValue);
                     }
                 }
 

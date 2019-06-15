@@ -53,5 +53,13 @@ namespace Microsoft.MixedReality.Toolkit.UI
         {
             // click called
         }
+
+        /// <summary>
+        /// A way for Interactable to let themes and events know Interactable was enabled again.
+        /// </summary>
+        public virtual void Reset()
+        {
+            // called when Interactable is enabled.
+        }
     }
 }

@@ -16,6 +16,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
     public class InteractableCustomSetting
     {
         public string Name;
+        public string Tooltip;
         public InteractableThemePropertyValueTypes Type;
         public InteractableThemePropertyValue Value;
     }
