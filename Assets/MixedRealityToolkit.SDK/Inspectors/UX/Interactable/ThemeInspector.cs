@@ -4,6 +4,7 @@
 using Microsoft.MixedReality.Toolkit.Utilities.Editor;
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -192,7 +193,7 @@ namespace Microsoft.MixedReality.Toolkit.UI.Editor
                     {
                         if (renderHost.gameObject.GetComponent(type))
                         {
-                            hasText = hasText || type == typeof(TextMesh) || type == typeof(Text);
+                            hasText = hasText || type == typeof(TextMesh) || type == typeof(Text) || type == typeof(TextMeshPro) || type == typeof(TextMeshProUGUI);
                             hasRenderer = hasRenderer || type == typeof(Renderer);
                             valid = true;
                         }
