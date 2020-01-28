@@ -193,7 +193,7 @@ namespace Microsoft.MixedReality.Toolkit.UI.Editor
                     {
                         if (renderHost.gameObject.GetComponent(type))
                         {
-                            hasText = hasText || type == typeof(TextMesh) || type == typeof(Text) || type == typeof(TextMeshPro) || type == typeof(TextMeshProUGUI);
+                            hasText = hasText || type == typeof(TextMesh) || type == typeof(Text);// || type == typeof(TextMeshPro) || type == typeof(TextMeshProUGUI);
                             hasRenderer = hasRenderer || type == typeof(Renderer);
                             valid = true;
                         }
